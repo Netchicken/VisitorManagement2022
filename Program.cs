@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 using VisitorManagement.Data;
+using VisitorManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +12,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-
-
-
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+//telling the program that the Service exists
+builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
 
 var app = builder.Build();
 
