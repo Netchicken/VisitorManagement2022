@@ -3,19 +3,21 @@
 using System.Diagnostics;
 
 using VisitorManagement.Models;
+using VisitorManagement.Services;
 
 namespace VisitorManagement.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ITextFileOperations _textFileOperations;
 
-        private readonly IWebHostEnvironment _webHostEnvironment;
+      
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment webHostEnvironment)
+        public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            _webHostEnvironment = webHostEnvironment;
+          
         }
 
         public IActionResult Index()
