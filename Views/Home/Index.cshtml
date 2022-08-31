@@ -3,6 +3,22 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    <h1 class="display-4">@ViewBag.Welcome to @ViewBag.VisitorNew.FirstName  @ViewBag.VisitorNew.LastName</h1>
+    <h2>@ViewData["AnotherWelcome"]</h2>
+
+    @foreach (var item in (IEnumerable<string>)ViewData["Conditions"])
+    {
+        if (item.ToString().Contains("Heading"))
+        {
+            <h3>  @item.ToString()</h3>
+        }
+        else
+        {
+            @item.ToString()
+
+        }
+
+
+    }
+
+    </div>
