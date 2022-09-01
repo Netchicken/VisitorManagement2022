@@ -10,6 +10,9 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
+        <div>
+            <a asp-action="Index">Back to List</a>
+        </div>
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -29,13 +32,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="DateIn" class="control-label"></label>
-                <input asp-for="DateIn" class="form-control" />
-                <span asp-validation-for="DateIn" class="text-danger"></span>
+                <input asp-for="DateIn" class="form-control" value=@DateTime.Now.ToString("yyyy/mm/dd--;-- --") />
+                @*<span asp-validation-for="DateIn" class="text-danger"></span>*@
             </div>
             <div class="form-group">
                 <label asp-for="DateOut" class="control-label"></label>
-                <input asp-for="DateOut" class="form-control" />
-                <span asp-validation-for="DateOut" class="text-danger"></span>
+                <input asp-for="DateOut" class="form-control" value=@DateTime.Now.ToString("yyyy/mm/dd--;-- --") />
+                @*<span asp-validation-for="DateOut" class="text-danger"></span>*@
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -44,9 +47,7 @@
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

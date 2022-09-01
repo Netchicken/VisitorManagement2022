@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using VisitorManagement.Data;
 using VisitorManagement.Models;
 
@@ -22,9 +18,9 @@ namespace VisitorManagement.Controllers
         // GET: Visitors
         public async Task<IActionResult> Index()
         {
-              return _context.Visitor != null ? 
-                          View(await _context.Visitor.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Visitor'  is null.");
+            return _context.Visitor != null ?
+                        View(await _context.Visitor.ToListAsync()) :
+                        Problem("Entity set 'ApplicationDbContext.Visitor'  is null.");
         }
 
         // GET: Visitors/Details/5
@@ -58,9 +54,14 @@ namespace VisitorManagement.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Business,DateIn,DateOut")] Visitor visitor)
         {
-            if (ModelState.IsValid)
+            DateTime thisDay = DateTime.Today;
+
+            //  if (ModelState.IsValid)
             {
                 visitor.Id = Guid.NewGuid();
+                //if the visitor dateis enpty add in todays date
+                // visitor.DateIn =  visitor.DateIn == null  ? thisDay : thisDay;
+                // visitor.DateOut = visitor.DateOut == null ? thisDay : thisDay;
                 _context.Add(visitor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -151,14 +152,14 @@ namespace VisitorManagement.Controllers
             {
                 _context.Visitor.Remove(visitor);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool VisitorExists(Guid id)
         {
-          return (_context.Visitor?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Visitor?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

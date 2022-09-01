@@ -19,8 +19,8 @@ builder.Services.AddControllersWithViews();
 //telling the program that the Service exists
 builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
 
-//Adding automapper to the program
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+//Adding automapper to the program  typeof(Program)  AppDomain.CurrentDomain.GetAssemblies()
+//builder.Services.AddAutoMapper(typeof(Program));
 
 
 var app = builder.Build();
