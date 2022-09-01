@@ -45,7 +45,7 @@ namespace VisitorManagement.Controllers
         // GET: Visitors/Create
         public IActionResult Create()
         {
-            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id");
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Name");
             return View();
         }
 
