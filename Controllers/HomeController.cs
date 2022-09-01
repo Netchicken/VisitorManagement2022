@@ -24,15 +24,7 @@ namespace VisitorManagement.Controllers
         {
             ViewBag.Welcome = "Welcome to the VMS";
 
-            ViewBag.VisitorNew = new Visitor()
-            {
-                FirstName = "Howard",
-                LastName = "The Barbarian"
-            };
-
-            ViewData["AnotherWelcome"] = "Please enter your Name";
-
-
+           
             ViewData["Conditions"] = _textFileOperations.LoadConditionsForAcceptanceText();
 
             return View();
