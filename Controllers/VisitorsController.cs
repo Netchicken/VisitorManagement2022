@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 using VisitorManagement.Data;
@@ -18,9 +19,8 @@ namespace VisitorManagement.Controllers
         // GET: Visitors
         public async Task<IActionResult> Index()
         {
-            return _context.Visitor != null ?
-                        View(await _context.Visitor.ToListAsync()) :
-                        Problem("Entity set 'ApplicationDbContext.Visitor'  is null.");
+            var applicationDbContext = _context.Visitor.Include(v => v.StaffName);
+            return View(await applicationDbContext.ToListAsync());
         }
 
         // GET: Visitors/Details/5
@@ -32,6 +32,7 @@ namespace VisitorManagement.Controllers
             }
 
             var visitor = await _context.Visitor
+                .Include(v => v.StaffName)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (visitor == null)
             {
@@ -44,22 +45,17 @@ namespace VisitorManagement.Controllers
         // GET: Visitors/Create
         public IActionResult Create()
         {
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id");
             return View();
         }
-
-        //if the visitor dateis enpty add in todays date
-        // visitor.DateIn =  visitor.DateIn == null  ? thisDay : thisDay;
-        // visitor.DateOut = visitor.DateOut == null ? thisDay : thisDay;
 
         // POST: Visitors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Business,DateIn,DateOut")] Visitor visitor)
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Business,DateIn,DateOut,StaffNameId")] Visitor visitor)
         {
-            DateTime thisDay = DateTime.Today;
-
             if (ModelState.IsValid)
             {
                 visitor.Id = Guid.NewGuid();
@@ -67,6 +63,7 @@ namespace VisitorManagement.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
             return View(visitor);
         }
 
@@ -83,6 +80,7 @@ namespace VisitorManagement.Controllers
             {
                 return NotFound();
             }
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
             return View(visitor);
         }
 
@@ -91,7 +89,7 @@ namespace VisitorManagement.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,FirstName,LastName,Business,DateIn,DateOut")] Visitor visitor)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,FirstName,LastName,Business,DateIn,DateOut,StaffNameId")] Visitor visitor)
         {
             if (id != visitor.Id)
             {
@@ -118,6 +116,7 @@ namespace VisitorManagement.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
             return View(visitor);
         }
 
@@ -130,6 +129,7 @@ namespace VisitorManagement.Controllers
             }
 
             var visitor = await _context.Visitor
+                .Include(v => v.StaffName)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (visitor == null)
             {

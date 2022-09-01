@@ -1,8 +1,10 @@
-﻿using AutoMapper;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-
 using VisitorManagement.Data;
 using VisitorManagement.Models;
 
@@ -11,28 +13,18 @@ namespace VisitorManagement.Controllers
     public class StaffNamesController : Controller
     {
         private readonly ApplicationDbContext _context;
-        // define the mapper
-      //  public readonly IMapper _mapper;, IMapper mapper   _mapper = mapper;
 
         public StaffNamesController(ApplicationDbContext context)
         {
             _context = context;
-         
         }
 
         // GET: StaffNames
         public async Task<IActionResult> Index()
         {
-            var result = await _context.StaffNames.ToListAsync();
-
-          //  var map = _mapper.Map<List<StaffNamesDTO>>(result);
-
-            return _context.StaffNames != null ?
+              return _context.StaffNames != null ? 
                           View(await _context.StaffNames.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.StaffNames'  is null.");
-
-
-
         }
 
         // GET: StaffNames/Details/5
@@ -159,14 +151,14 @@ namespace VisitorManagement.Controllers
             {
                 _context.StaffNames.Remove(staffNames);
             }
-
+            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool StaffNamesExists(Guid id)
         {
-            return (_context.StaffNames?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.StaffNames?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
