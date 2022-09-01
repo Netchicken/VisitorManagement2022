@@ -47,6 +47,10 @@ namespace VisitorManagement.Controllers
             return View();
         }
 
+        //if the visitor dateis enpty add in todays date
+        // visitor.DateIn =  visitor.DateIn == null  ? thisDay : thisDay;
+        // visitor.DateOut = visitor.DateOut == null ? thisDay : thisDay;
+
         // POST: Visitors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -56,12 +60,9 @@ namespace VisitorManagement.Controllers
         {
             DateTime thisDay = DateTime.Today;
 
-            //  if (ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 visitor.Id = Guid.NewGuid();
-                //if the visitor dateis enpty add in todays date
-                // visitor.DateIn =  visitor.DateIn == null  ? thisDay : thisDay;
-                // visitor.DateOut = visitor.DateOut == null ? thisDay : thisDay;
                 _context.Add(visitor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
