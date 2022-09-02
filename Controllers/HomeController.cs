@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 using System.Diagnostics;
 
+using VisitorManagement.Data;
 using VisitorManagement.Models;
 using VisitorManagement.Services;
 
@@ -11,23 +13,39 @@ namespace VisitorManagement.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ITextFileOperations _textFileOperations;
+        private readonly ApplicationDbContext _context;
 
 
-
-        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations)
+        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context)
         {
             _logger = logger;
             _textFileOperations = textFileOperations;
+            _context = context;
         }
 
         public IActionResult Index()
         {
             ViewBag.Welcome = "Welcome to the VMS";
 
-           
+
             ViewData["Conditions"] = _textFileOperations.LoadConditionsForAcceptanceText();
 
-            return View();
+
+
+            var staffList = new SelectList(_context.StaffNames, "Id", "Name");
+
+
+            ViewData["StaffNameId"] = staffList;
+
+            //create an instance of the visitor
+            Visitor visitor = new Visitor();
+            //pass in the currentdate and time to the Datein property
+            visitor.DateIn = DateTime.Now;
+
+            //send that visitor to the Create View
+            return View(visitor);
+
+            //return View();
         }
 
         public IActionResult Privacy()

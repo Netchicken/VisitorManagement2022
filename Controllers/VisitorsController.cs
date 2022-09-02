@@ -45,8 +45,18 @@ namespace VisitorManagement.Controllers
         // GET: Visitors/Create
         public IActionResult Create()
         {
-            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Name");
-            return View();
+            var staffList = new SelectList(_context.StaffNames, "Id", "Name");
+
+           
+            ViewData["StaffNameId"] = staffList;
+
+            //create an instance of the visitor
+            Visitor visitor = new Visitor();
+            //pass in the currentdate and time to the Datein property
+            visitor.DateIn = DateTime.Now;
+
+            //send that visitor to the Create View
+            return View(visitor);
         }
 
         // POST: Visitors/Create
@@ -80,7 +90,7 @@ namespace VisitorManagement.Controllers
             {
                 return NotFound();
             }
-            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Name", visitor.StaffNameId);
             return View(visitor);
         }
 
