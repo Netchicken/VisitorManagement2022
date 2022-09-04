@@ -18,8 +18,10 @@ namespace VisitorManagement.Models
 
         [Display(Name = "Staff Person Visited")]
         public Guid StaffNameId { get; set; }
-         [Display(Name = "Staff Person Visited")] 
+        [Display(Name = "Staff Person Visited")]
         public StaffNames? StaffName { get; set; }
+
+
 
 
     }

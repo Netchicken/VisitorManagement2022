@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 
 using VisitorManagement.Models;
+using VisitorManagement.ViewModels;
 
 namespace VisitorManagement.Profiles
 {
@@ -8,32 +9,43 @@ namespace VisitorManagement.Profiles
     {
         //load the mappings into the constructor
         //https://code-maze.com/automapper-net-core/
+        //https://docs.automapper.org/en/latest/Dependency-injection.html#asp-net-core
 
+        //put maps in the constructor
         public AutoMapperProfile()
         {
-            CreateMap<VisitorDTO, Visitor>();
+            //         source      destination
+            CreateMap<Visitor, VisitorVM>()
+                .ReverseMap(); 
 
-            CreateMap<StaffNamesDTO, StaffNames>()
-            .ForMember(
-                  dest => dest.Id,
-                  opt => opt.MapFrom(src => src.Id)
-              )
-              .ForMember(
-                  dest => dest.Name,
-                  opt => opt.MapFrom(src => src.Name)
-              )
-              .ForMember(
-                  dest => dest.Department,
-                  opt => opt.MapFrom(src => src.Department)
-              )
+            CreateMap<List<StaffNames>, List<StaffNamesVM>>()
+                .ReverseMap(); 
 
-              .ForMember(
-                  dest => dest.VisitorCount,
-                  opt => opt.MapFrom(src => src.VisitorCount)
-              )
-              .ReverseMap();
+            CreateMap<StaffNames, StaffNamesVM>()
+                .ReverseMap();
 
-            CreateMap<List<StaffNamesDTO>, List<StaffNames>>();
+
+            //can write custom mapping otherwise its by convention
+            //.ForMember(
+            //      dest => dest.Id,
+            //      opt => opt.MapFrom(src => src.Id)
+            //  )
+            //  .ForMember(
+            //      dest => dest.Name,
+            //      opt => opt.MapFrom(src => src.Name)
+            //  )
+            //  .ForMember(
+            //      dest => dest.Department,
+            //      opt => opt.MapFrom(src => src.Department)
+            //  )
+
+            //  .ForMember(
+            //      dest => dest.VisitorCount,
+            //      opt => opt.MapFrom(src => src.VisitorCount)
+            //  )
+            //  .ReverseMap();
+
+
 
         }
 

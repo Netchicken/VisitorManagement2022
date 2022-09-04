@@ -20,7 +20,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
 
 //Adding automapper to the program  typeof(Program)  AppDomain.CurrentDomain.GetAssemblies()
-//builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(Program));
 
 
 var app = builder.Build();

@@ -1,6 +1,8 @@
-﻿namespace VisitorManagement.Models
+﻿
+
+namespace VisitorManagement.ViewModels
 {
-    public class VisitorDTO
+    public class VisitorVM
     {
         
         public Guid Id { get; set; }
@@ -10,7 +12,7 @@
 
         public DateTime DateIn { get; set; }
         public DateTime DateOut { get; set; }
-        public StaffNames StaffName { get; set; }
+        public StaffNamesVM StaffName { get; set; }
 
 
     }

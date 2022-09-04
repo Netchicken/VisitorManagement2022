@@ -1,6 +1,6 @@
-﻿namespace VisitorManagement.Models
+﻿namespace VisitorManagement.ViewModels
 {
-    public class StaffNamesDTO
+    public class StaffNamesVM
     {
         public Guid Id { get; set; }
         public string Name { get; set; }

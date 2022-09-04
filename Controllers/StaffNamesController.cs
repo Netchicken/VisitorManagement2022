@@ -2,26 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VisitorManagement.Data;
 using VisitorManagement.Models;
+using VisitorManagement.ViewModels;
 
 namespace VisitorManagement.Controllers
 {
     public class StaffNamesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMapper _mapper;
 
-        public StaffNamesController(ApplicationDbContext context)
+        public StaffNamesController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: StaffNames
         public async Task<IActionResult> Index()
-        {
+                    {
+
+            List<StaffNames> staffNames = await _context.StaffNames.ToListAsync();
+            _mapper.Map<List<StaffNamesVM>, List<StaffNames>>(staffNames);
+
               return _context.StaffNames != null ? 
                           View(await _context.StaffNames.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.StaffNames'  is null.");
