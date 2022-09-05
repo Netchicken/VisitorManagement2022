@@ -6,7 +6,7 @@
         public string? Name { get; set; }
         public string? Department { get; set; }
         public int? VisitorCount { get; set; }
-        public List<Visitor>? Visitors { get; set; }
+        //public List<Visitor>? Visitors { get; set; }
 
     }
 }

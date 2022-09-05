@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+
 using VisitorManagement.Data;
 using VisitorManagement.Models;
 using VisitorManagement.ViewModels;
@@ -26,14 +22,16 @@ namespace VisitorManagement.Controllers
 
         // GET: StaffNames
         public async Task<IActionResult> Index()
-                    {
+        {
+            //beware of await causing errors that are wierd, you must have it in the code.
+            var staffNames = _context.StaffNames.ToListAsync();
+            var StaffNamesVM = _mapper.Map<IEnumerable<StaffNamesVM>>(await staffNames);
 
-            List<StaffNames> staffNames = await _context.StaffNames.ToListAsync();
-            _mapper.Map<List<StaffNamesVM>, List<StaffNames>>(staffNames);
 
-              return _context.StaffNames != null ? 
-                          View(await _context.StaffNames.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.StaffNames'  is null.");
+
+            return _context.StaffNames != null ?
+                        View(StaffNamesVM) :
+                        Problem("Entity set 'ApplicationDbContext.StaffNames'  is null.");
         }
 
         // GET: StaffNames/Details/5
@@ -51,7 +49,8 @@ namespace VisitorManagement.Controllers
                 return NotFound();
             }
 
-            return View(staffNames);
+            var StaffNamesVM = _mapper.Map<StaffNamesVM>(staffNames);
+            return View(StaffNamesVM);
         }
 
         // GET: StaffNames/Create
@@ -160,14 +159,14 @@ namespace VisitorManagement.Controllers
             {
                 _context.StaffNames.Remove(staffNames);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool StaffNamesExists(Guid id)
         {
-          return (_context.StaffNames?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.StaffNames?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

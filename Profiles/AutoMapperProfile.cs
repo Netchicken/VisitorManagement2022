@@ -15,14 +15,11 @@ namespace VisitorManagement.Profiles
         public AutoMapperProfile()
         {
             //         source      destination
-            CreateMap<Visitor, VisitorVM>()
-                .ReverseMap(); 
+            //  CreateMap<Visitor, VisitorVM>().ReverseMap();
 
-            CreateMap<List<StaffNames>, List<StaffNamesVM>>()
-                .ReverseMap(); 
+            //  CreateMap<List<StaffNamesVM>, List<StaffNames>>().ReverseMap();
 
-            CreateMap<StaffNames, StaffNamesVM>()
-                .ReverseMap();
+            CreateMap<StaffNames, StaffNamesVM>().ReverseMap();
 
 
             //can write custom mapping otherwise its by convention
