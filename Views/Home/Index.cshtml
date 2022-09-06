@@ -5,55 +5,20 @@
 <div>
     <img src="~/images/logo.png" height="113" width="113" border="0" />
     <h1 class="display-4">@ViewBag.Welcome </h1>
-
-    @await Html.PartialAsync("_VisitorCreate", Model)
-
-
-    @*Wrap the entries in a row so that when 4 columns are made it wraps to the next row *@
     <div class="row">
+        <div class="col">
 
-        @foreach (var item in (IEnumerable<string>)ViewData["Conditions"])
-        {
-            if (item.ToString().Contains("Heading"))
-            {
+            @await Html.PartialAsync("_VisitorCreate")
+        </div>
+        <div class ="col">
 
-                <div class="card" style=" margin-top: 20px">
-                    <div class="card-body">
+        </div>
 
+        </div>
+     
+<div class="row">
+       
+    @await Html.PartialAsync("_Conditions")
 
-                        <form method="post">
-                            <div class="form-group">
-                                <div class="row">
-                                    <h3> @item.ToString().Replace("Heading", "")</h3>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                </div>
-
-
-
-                @*<div class="form-group col-md-12">
-                        <h3> @item.ToString().Replace("Heading", "")</h3>
-                    </div>*@
-
-            }
-            else
-            {
-                //col-md-3 means you get 4 columns to a  row
-
-
-
-
-                <div class="form-group col-md-3 text-left">
-                    @item.ToString()
-
-                </div>
-
-
-
-            }
-        }
-    </div>
 </div>
+    </div>

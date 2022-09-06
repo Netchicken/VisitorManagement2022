@@ -5,6 +5,7 @@ namespace VisitorManagement.Services
 {
     public class DataSeeder : IDataSeeder
     {
+        //Used DI to inject in the database context
         private readonly ApplicationDbContext _context;
         public DataSeeder(ApplicationDbContext dbContext)
         {
@@ -13,6 +14,8 @@ namespace VisitorManagement.Services
 
 
         //https://medium.com/executeautomation/seeding-data-using-ef-core-in-asp-net-core-6-0-minimal-api-d5f6ecdb350c
+
+        //a method that seeds data 
         public async Task SeedAsync()
         {
             //if there are no fields in the StaffNames db

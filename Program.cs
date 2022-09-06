@@ -23,7 +23,7 @@ builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
 builder.Services.AddAutoMapper(typeof(Program));
 
 //adding the dataSeeder class to the program
-builder.Services.AddTransient<DataSeeder>();
+builder.Services.AddTransient<IDataSeeder,DataSeeder>();
 
 var app = builder.Build();
 

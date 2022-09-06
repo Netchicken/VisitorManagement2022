@@ -54,6 +54,31 @@ namespace VisitorManagement.Controllers
             //return View();
         }
 
+        //copied over from the VisitorsController
+        // POST: Visitors/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Business,DateIn,DateOut,StaffNameId")] Visitor visitor)
+        {
+            if (ModelState.IsValid)
+            {
+                //get a new guid
+                visitor.Id = Guid.NewGuid();
+                //add the new visitor to the context
+                _context.Add(visitor);
+                //save the data to the database
+                await _context.SaveChangesAsync();
+                //reload the page in the controller that is the index page.
+                return RedirectToAction(nameof(Index));
+            }
+            //reloads the select list
+            ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
+            return View(visitor);
+        }
+
+
         public IActionResult Privacy()
         {
             return View();
