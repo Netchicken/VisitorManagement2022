@@ -14,17 +14,23 @@ namespace VisitorManagement.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ITextFileOperations _textFileOperations;
         private readonly ApplicationDbContext _context;
+        private readonly IDataSeeder _dataSeeder;
 
 
-        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder)
         {
             _logger = logger;
             _textFileOperations = textFileOperations;
             _context = context;
+            _dataSeeder = dataSeeder;
         }
 
         public IActionResult Index()
         {
+            //run the dataseeder
+            _dataSeeder.SeedAsync();
+
+
             ViewBag.Welcome = "Welcome to the VMS";
 
 

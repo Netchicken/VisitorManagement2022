@@ -24,11 +24,10 @@ namespace VisitorManagement.Controllers
         public async Task<IActionResult> Index()
         {
             //beware of await causing errors that are wierd, you must have it in the code.
-            var staffNames = _context.StaffNames.ToListAsync();
+            var staffNames = _context.StaffNames.ToListAsync(); //get the data from the DB
+            //map it to the StaffnamesVM from teh StaffNames class
             var StaffNamesVM = _mapper.Map<IEnumerable<StaffNamesVM>>(await staffNames);
-
-
-
+            //carry on with default code
             return _context.StaffNames != null ?
                         View(StaffNamesVM) :
                         Problem("Entity set 'ApplicationDbContext.StaffNames'  is null.");
@@ -36,7 +35,7 @@ namespace VisitorManagement.Controllers
 
         // GET: StaffNames/Details/5
         public async Task<IActionResult> Details(Guid? id)
-        {
+        {//this is all default code
             if (id == null || _context.StaffNames == null)
             {
                 return NotFound();
@@ -48,7 +47,7 @@ namespace VisitorManagement.Controllers
             {
                 return NotFound();
             }
-
+            //make changes here at the end
             var StaffNamesVM = _mapper.Map<StaffNamesVM>(staffNames);
             return View(StaffNamesVM);
         }

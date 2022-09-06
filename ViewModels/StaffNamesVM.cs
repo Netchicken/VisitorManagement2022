@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
 
 namespace VisitorManagement.ViewModels
 {
@@ -13,7 +12,5 @@ namespace VisitorManagement.ViewModels
 
         [Display(Name = "Count of Visitors")]
         public int? VisitorCount { get; set; }
-        //public List<Visitor>? Visitors { get; set; }
-
     }
 }

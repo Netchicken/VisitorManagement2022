@@ -19,9 +19,11 @@ builder.Services.AddControllersWithViews();
 //telling the program that the Service exists
 builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
 
-//Adding automapper to the program  typeof(Program)  AppDomain.CurrentDomain.GetAssemblies()
+//Adding automapper to the program  
 builder.Services.AddAutoMapper(typeof(Program));
 
+//adding the dataSeeder class to the program
+builder.Services.AddTransient<DataSeeder>();
 
 var app = builder.Build();
 

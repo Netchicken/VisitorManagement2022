@@ -8,7 +8,6 @@ namespace VisitorManagement.ViewModels
 {
     public class VisitorVM
     {
-
         public Guid Id { get; set; }
 
         [Display(Name = "First Name")]
@@ -25,7 +24,5 @@ namespace VisitorManagement.ViewModels
         public Guid StaffNameId { get; set; }
         [Display(Name = "Staff Person Visited")]
         public StaffNames? StaffName { get; set; }
-
-
     }
 }
