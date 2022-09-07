@@ -28,8 +28,8 @@ namespace VisitorManagement.Controllers
         public IActionResult Index()
         {
             //run the dataseeder
-            _dataSeeder.SeedAsync();
-
+            _dataSeeder.SeedStaffAsync();
+            _dataSeeder.SeedVisitorsAsync();
 
             ViewBag.Welcome = "Welcome to the VMS";
 

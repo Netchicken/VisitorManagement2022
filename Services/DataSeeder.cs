@@ -1,4 +1,9 @@
-﻿using VisitorManagement.Data;
+﻿using AutoMapper;
+
+using System.Text.Json;
+
+using VisitorManagement.Data;
+using VisitorManagement.Mock;
 using VisitorManagement.Models;
 
 namespace VisitorManagement.Services
@@ -7,16 +12,19 @@ namespace VisitorManagement.Services
     {
         //Used DI to inject in the database context
         private readonly ApplicationDbContext _context;
-        public DataSeeder(ApplicationDbContext dbContext)
+        // add mapper to map jsonVisitor
+        private readonly IMapper _mapper;
+        public DataSeeder(ApplicationDbContext dbContext, IMapper mapper)
         {
             _context = dbContext;
+            _mapper = mapper;
         }
 
 
         //https://medium.com/executeautomation/seeding-data-using-ef-core-in-asp-net-core-6-0-minimal-api-d5f6ecdb350c
 
         //a method that seeds data 
-        public async Task SeedAsync()
+        public async Task SeedStaffAsync()
         {
             //if there are no fields in the StaffNames db
             if (!_context.StaffNames.Any())
@@ -106,7 +114,52 @@ namespace VisitorManagement.Services
 
 
         }
+        //IAsyncEnumerable<Visitor> 
+        public async Task SeedVisitorsAsync()
+        {
+            //https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-how-to?pivots=dotnet-6-0
+
+            if (!_context.Visitor.Any())
+            { //get path to my visitorsMock json file 
+                string fileName = "Mock/visitorsMock.json";
+                //read the data from the json file
+                using FileStream openStream = File.OpenRead(fileName);
+                //make a list of JsonVisitor to hold the data
+                var visitorList = new List<JsonVisitor>();
+
+                // Instantiate random number generator 
+                var rand = new Random();
+                //count how many entries there are in the Staffnames 
+                var StaffGuids = _context.StaffNames.Select(s => s.Id).ToList();
+
+                await foreach (var item in JsonSerializer.DeserializeAsyncEnumerable<JsonVisitor>(openStream))
+                {
+                    //get a random number between 0 and the cout of staffnames
+                    int randRow = rand.Next(0, StaffGuids.Count);
+                    //get a random staffName.Id 
+                    Guid id = StaffGuids[randRow];
+                    //convert it to a string and pass it to the StaffnameId
+                    item.StaffNameId = id.ToString();
+
+
+                    //add the whole lot to the list.
+                    visitorList.Add(item);
+                }
+
+
+                var visitorContext = _mapper.Map<IEnumerable<Visitor>>(visitorList);
+
+                _context.Visitor.AddRange(visitorContext);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+
     }
+
+
+
+
 }
 //Next up, we need to call this DataSeeder class while the we need it, this can be done while the application starts or by specifying in the commandline via dotnet run command. Here is how we are going to do the same
 
