@@ -136,10 +136,14 @@ namespace VisitorManagement.Services
                 {
                     //get a random number between 0 and the cout of staffnames
                     int randRow = rand.Next(0, StaffGuids.Count);
-                    //get a random staffName.Id 
+                    //get a random staffName.Id at the array number [4]
                     Guid id = StaffGuids[randRow];
+
+
                     //convert it to a string and pass it to the StaffnameId
                     item.StaffNameId = id.ToString();
+                    item.DateIn = RandomDateIn();
+                    item.DateOut = RandomDateOut(item.DateIn);
 
 
                     //add the whole lot to the list.
@@ -150,10 +154,49 @@ namespace VisitorManagement.Services
                 var visitorContext = _mapper.Map<IEnumerable<Visitor>>(visitorList);
 
                 _context.Visitor.AddRange(visitorContext);
-                await _context.SaveChangesAsync();
+                _context.SaveChangesAsync();
             }
         }
+        /// <summary>
+        /// create the date in random date 
+        /// </summary>
+        /// <returns></returns>
+        private string RandomDateIn()
+        {
+            Random rnd = new Random();
+            DateTime datetoday = DateTime.Now;
 
+            int rndYear = rnd.Next(datetoday.Year - 2, datetoday.Year);
+            int rndMonth = rnd.Next(1, 12);
+            int rndDay = rnd.Next(1, 31);
+            int rndHour = rnd.Next(8, 16);
+            int rndMinute = rnd.Next(0, 60);
+            DateTime generateDate = new DateTime(rndYear, rndMonth, rndDay, rndHour, rndMinute, 0);
+
+            return generateDate.ToString();
+
+        }
+
+
+        /// <summary>
+        /// Create the Date out random date
+        /// </summary>
+        /// <param name="dateEnd">input the datein</param>
+        /// <returns></returns>
+        private string RandomDateOut(string dateEnd)
+        {
+            Random rnd = new Random();
+
+            DateTime DateEnd = DateTime.Parse(dateEnd);
+
+            int rndHour = rnd.Next(DateEnd.Hour, DateEnd.Hour + 4);
+            int rndMinute = rnd.Next(DateEnd.Minute, 60);
+
+            DateTime generateDate = new DateTime(DateEnd.Year,  DateEnd.Month, DateEnd.Day, rndHour, rndMinute, 0);
+
+            return generateDate.ToString();
+
+        }
 
     }
 
