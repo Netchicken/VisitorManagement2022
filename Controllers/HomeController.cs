@@ -15,14 +15,16 @@ namespace VisitorManagement.Controllers
         private readonly ITextFileOperations _textFileOperations;
         private readonly ApplicationDbContext _context;
         private readonly IDataSeeder _dataSeeder;
+        private readonly IDBCalls _dbCalls;
 
 
-        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder)
+        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder, IDBCalls dbCalls)
         {
             _logger = logger;
             _textFileOperations = textFileOperations;
             _context = context;
             _dataSeeder = dataSeeder;
+            _dbCalls = dbCalls;
         }
 
         public IActionResult Index()
@@ -35,7 +37,8 @@ namespace VisitorManagement.Controllers
 
 
             ViewData["Conditions"] = _textFileOperations.LoadConditionsForAcceptanceText();
-
+            ViewData["TopStaff"] = _dbCalls.Top5StaffVisitors();
+            ViewData["LoggedInVIsitors"] = _dbCalls.VisitorsLoggedIn();
 
 
             var staffList = new SelectList(_context.StaffNames, "Id", "Name");

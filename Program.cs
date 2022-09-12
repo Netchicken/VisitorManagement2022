@@ -16,14 +16,26 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
-//telling the program that the Service exists
-builder.Services.AddSingleton<ITextFileOperations, TextFileOperations>();
+
+//Singleton creates a single instance once and reuses the same object in all calls. Use Singletons where you need to maintain application wide state, for example, application configuration, logging service, caching of data, etc.
+//Singletons are memory efficient as they are created once and reused everywhere.
+builder.Services.AddTransient<ITextFileOperations, TextFileOperations>();
+
+// adding the DBCalls class to the program
+builder.Services.AddTransient<IDBCalls, DBCalls>();
+
+
+//adding the dataSeeder class to the program  Transient lifetime services are created each time they are requested. This lifetime works best for lightweight, stateless services. Since they are created every time, they will use more memory & resources and can have negative impact on performance.
+builder.Services.AddTransient<IDataSeeder, DataSeeder>();
+
+//Scoped lifetime services are created once per request. For example, in MVC it creates one instance for each HTTP request, but it uses the same instance in the other calls within the same web request.
+
+//not used yet
+
 
 //Adding automapper to the program  
-builder.Services.AddAutoMapper(typeof(Program));
 
-//adding the dataSeeder class to the program
-builder.Services.AddTransient<IDataSeeder,DataSeeder>();
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

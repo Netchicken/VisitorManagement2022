@@ -168,7 +168,7 @@ namespace VisitorManagement.Services
 
             int rndYear = rnd.Next(datetoday.Year - 2, datetoday.Year);
             int rndMonth = rnd.Next(1, 12);
-            int rndDay = rnd.Next(1, 31);
+            int rndDay = rnd.Next(1, 29);
             int rndHour = rnd.Next(8, 16);
             int rndMinute = rnd.Next(0, 60);
             DateTime generateDate = new DateTime(rndYear, rndMonth, rndDay, rndHour, rndMinute, 0);
@@ -181,13 +181,13 @@ namespace VisitorManagement.Services
         /// <summary>
         /// Create the Date out random date
         /// </summary>
-        /// <param name="dateEnd">input the datein</param>
+        /// <param name="dateIn>input the datein</param>
         /// <returns></returns>
-        private string RandomDateOut(string dateEnd)
+        private string RandomDateOut(string dateIn)
         {
             Random rnd = new Random();
 
-            DateTime DateEnd = DateTime.Parse(dateEnd);
+            DateTime DateEnd = DateTime.Parse(dateIn);
 
             int rndHour = rnd.Next(DateEnd.Hour, DateEnd.Hour + 4);
             int rndMinute = rnd.Next(DateEnd.Minute, 60);
