@@ -25,7 +25,7 @@
                 <ul>
                     @foreach (var item in (IEnumerable<Visitor>)ViewData["LoggedInVIsitors"])
                     {
-                        <li>  @item.FirstName @item.LastName  visiting @item.StaffName.Name</li>
+                        <li> <a asp-route="LogoutRoute" asp-route-id="@item.Id" class="btn btn-primary" type="button"   >Logout</a>  @item.FirstName @item.LastName  visiting @item.StaffName.Name    </li>
                     }
                 </ul>
             </div>

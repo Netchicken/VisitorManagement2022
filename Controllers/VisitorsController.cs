@@ -4,16 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 using VisitorManagement.Data;
 using VisitorManagement.Models;
+using VisitorManagement.Services;
 
 namespace VisitorManagement.Controllers
 {
     public class VisitorsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDBCalls _dbCalls;
 
-        public VisitorsController(ApplicationDbContext context)
+        public VisitorsController(ApplicationDbContext context, IDBCalls dbCalls)
         {
             _context = context;
+            _dbCalls = dbCalls;
         }
 
         // GET: Visitors
@@ -47,7 +50,7 @@ namespace VisitorManagement.Controllers
         {
             var staffList = new SelectList(_context.StaffNames, "Id", "Name");
 
-           
+
             ViewData["StaffNameId"] = staffList;
 
             //create an instance of the visitor
@@ -68,6 +71,15 @@ namespace VisitorManagement.Controllers
         {
             if (ModelState.IsValid)
             {
+                //increase the counter 
+                //increase the counter 
+                var staff = _context.StaffNames.Find(visitor.StaffNameId);
+                staff.VisitorCount++;
+                _context.Update(staff);
+
+
+
+
                 visitor.Id = Guid.NewGuid();
                 _context.Add(visitor);
                 await _context.SaveChangesAsync();

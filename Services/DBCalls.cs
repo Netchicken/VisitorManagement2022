@@ -44,22 +44,7 @@ namespace VisitorManagement.Services
         {
             return _context.Visitor.OrderByDescending(v => v.DateIn).Where(v => v.DateOut == null).ToList();
         }
-
-        public void IncrementStaffCount(int id)
-        {
-            var MostRecentStaffVisited = _context.StaffNames.Find(id);
-            //_context.Visitor.OrderByDescending(u => u.Id).FirstOrDefault();
-            //Debug.Assert(MostRecentVisitor != null, nameof(MostRecentVisitor) + " != null");
-            MostRecentStaffVisited.VisitorCount++;
-            _context.Update(MostRecentStaffVisited);
-            _context.SaveChangesAsync();
-            //
-            //
-            //
-            // _context.StaffNames.OrderByDescending(u => u.Id).FirstOrDefault();
-            //  staffNames.VisitorCount++;
-
-        }
+        
     }
 
 
