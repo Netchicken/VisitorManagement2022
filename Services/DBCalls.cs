@@ -27,7 +27,7 @@ namespace VisitorManagement.Services
 
             IEnumerable<StaffNames> AllStaff = _context.StaffNames
                 .Take(5)
-                .OrderBy(i => i.Department)
+                .OrderByDescending(i => i.VisitorCount)
                 .ThenBy(i => i.Name)
                 .ToList();
             return AllStaff.ToList();
@@ -40,11 +40,26 @@ namespace VisitorManagement.Services
         {
             return _context.Visitor.Distinct().OrderBy(v => v.FirstName).ToList();
         }
+
+        /// <summary>
+        /// Get all the visitors who havn't left yet
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Visitor> VisitorsLoggedIn()
         {
             return _context.Visitor.OrderByDescending(v => v.DateIn).Where(v => v.DateOut == null).ToList();
         }
-        
+
+        public IEnumerable<Visitor> VisitorsInTheLast7days()
+        {
+            return _context.Visitor
+                                 .Where(v => v.DateIn > DateTime.Today.AddDays(-7))
+                                 .OrderBy(v => v.DateIn)
+                                 .Select(s => new Visitor { FirstName = s.FirstName, LastName = s.LastName, StaffName = s.StaffName })
+                              .ToList();
+        }
+
+
     }
 
 

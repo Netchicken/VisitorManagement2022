@@ -39,7 +39,7 @@ namespace VisitorManagement.Controllers
             ViewData["Conditions"] = _textFileOperations.LoadConditionsForAcceptanceText();
             ViewData["TopStaff"] = _dbCalls.Top5StaffVisitors();
             ViewData["LoggedInVIsitors"] = _dbCalls.VisitorsLoggedIn();
-
+            ViewData["Last7DaysVisitors"] = _dbCalls.VisitorsInTheLast7days();
 
             var staffList = new SelectList(_context.StaffNames, "Id", "Name");
 

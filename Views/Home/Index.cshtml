@@ -19,15 +19,29 @@
                         <li>  @item.Name  @item.VisitorCount visitors</li>
                     }
                 </ul>
-            </div>
-            <div class="col-3">
+
                 <h4>Current Visitors</h4>
                 <ul>
                     @foreach (var item in (IEnumerable<Visitor>)ViewData["LoggedInVIsitors"])
                     {
-                        <li> <a asp-route="LogoutRoute" asp-route-id="@item.Id" class="btn btn-primary" type="button"   >Logout</a>  @item.FirstName @item.LastName  visiting @item.StaffName.Name    </li>
+                        <li> <a asp-route="LogoutRoute" asp-route-id="@item.Id" class="btn btn-primary" type="button">Logout</a>  @item.FirstName @item.LastName  visiting @item.StaffName.Name    </li>
                     }
                 </ul>
+
+
+            </div>
+            <div class="col-3">
+               
+
+                <h4>Visitors in the last 7 days</h4>
+                <ul>
+                    @foreach (var item in (IEnumerable<Visitor>)ViewData["Last7DaysVisitors"])
+                    {
+                        <li>  @item.FirstName  @item.LastName  met with @item.StaffName.Name</li>
+                    }
+                </ul>
+
+
             </div>
 
         </div>
