@@ -55,7 +55,7 @@ namespace VisitorManagement.Services
             return _context.Visitor
                                  .Where(v => v.DateIn > DateTime.Today.AddDays(-7))
                                  .OrderBy(v => v.DateIn)
-                                 .Select(s => new Visitor { FirstName = s.FirstName, LastName = s.LastName, StaffName = s.StaffName })
+                                 .Select(s => new Visitor { FirstName = s.FirstName, LastName = s.LastName, StaffName = s.StaffName, DateIn= s.DateIn })
                               .ToList();
         }
 
