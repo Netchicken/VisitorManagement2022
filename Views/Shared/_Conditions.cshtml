@@ -1,22 +1,26 @@
 ﻿@*Wrap the entries in a row so that when 4 columns are made it wraps to the next row *@
 
-@foreach (var item in (IEnumerable<string>)ViewData["Conditions"])
-{
-    if (item.ToString().Contains("Heading"))
+<div class="row">
+
+    @foreach (var item in (IEnumerable<string>)ViewData["Conditions"])
     {
-        <div class="card" style=" margin-top: 20px">
-            <div class="card-body">
-                <div class="row">
-                    <h3> @item.ToString().Replace("Heading", "")</h3>
-                </div>
+
+        @if (item.ToString().Contains("Heading"))
+        {
+            <h3> @item.ToString().Replace("Heading", "")</h3>
+        }
+        else
+        {
+                      @*//col-md-3 means you get 4 columns to a  row*@
+                    <div class="form-group col-md-3 text-left">
+                        <div class="card">
+                            <div class="card-body">
+
+                                @item.ToString()
+                            </div>
+                        </div>
             </div>
-        </div>
+        }
+
     }
-    else
-    {
-        //col-md-3 means you get 4 columns to a  row
-        <div class="form-group col-md-3 text-left">
-            @item.ToString()
-        </div>
-    }
-}
+</div>
