@@ -85,10 +85,8 @@ namespace VisitorManagement.Controllers
                 //save the data to the database
                 await _context.SaveChangesAsync();
 
-                string message = "Thank you for visiting " + staff.Name + " today";
-                string welcome = "Welcome " + visitor.FirstName + " " + visitor.LastName;
-                Alert(message, welcome);//add this method
 
+                TempData["create"] = _sweetalert.Alert("Welcome to the College", visitor.FirstName + " visiting " + visitor.StaffName.Name, NotificationType.success);
 
 
                 //reload the page in the controller that is the index page.
@@ -139,24 +137,6 @@ namespace VisitorManagement.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        /// <summary>
-        /// SweetAlert popups
-        /// </summary>
-        /// <param name="id"></param>
-        public void Alert(string name, string welcome)
-        {
-            var msg = "<script type='text/javascript'>Swal.fire({" +
-                "title: Visitor Management System'," +
-                "text: '" + welcome + " " + name + "', " +
-                "icon: 'success', " +
-                "timer:'2000'})</script>";
-
-
-
-            TempData["notification"] = msg;
-
-
-        }
 
 
         public IActionResult Privacy()

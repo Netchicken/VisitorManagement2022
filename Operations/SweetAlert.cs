@@ -4,6 +4,10 @@ namespace VisitorManagement.Operations
 {
     public class SweetAlert : ISweetAlert
     {
+        /// <summary>
+        /// SweetAlert popups
+        /// </summary>
+        /// <param name="id"></param>
         public string Alert(string title, string message, NotificationType notificationType)
         {
             return "<script type=\"text/javascript\">Swal.fire({ title: '" + title + "', text: '" + message + "', icon: '" + notificationType.ToString().ToUpper() + "',  timer: '5000'})</script>";
