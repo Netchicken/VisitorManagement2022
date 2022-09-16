@@ -5,7 +5,10 @@ using System.Diagnostics;
 
 using VisitorManagement.Data;
 using VisitorManagement.Models;
+using VisitorManagement.Operations;
 using VisitorManagement.Services;
+
+using static VisitorManagement.Enum.SweetAlertEnum;
 
 namespace VisitorManagement.Controllers
 {
@@ -16,15 +19,17 @@ namespace VisitorManagement.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IDataSeeder _dataSeeder;
         private readonly IDBCalls _dbCalls;
+        private readonly ISweetAlert _sweetalert;
 
 
-        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder, IDBCalls dbCalls)
+        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder, IDBCalls dbCalls, ISweetAlert sweetalert)
         {
             _logger = logger;
             _textFileOperations = textFileOperations;
             _context = context;
             _dataSeeder = dataSeeder;
             _dbCalls = dbCalls;
+            _sweetalert = sweetalert;
         }
 
         public IActionResult Index()
@@ -32,7 +37,7 @@ namespace VisitorManagement.Controllers
             //run the dataseeder
             //  _dataSeeder.SeedStaffAsync();
             //  _dataSeeder.SeedVisitorsAsync();
-            Alert("Welcome to the VM", "Welcome");//add this method
+            TempData["notification"] = _sweetalert.Alert("This is the Index Page", "This is a cool message", NotificationType.success);
             ViewBag.Welcome = "Welcome to the VMS";
 
 
@@ -146,11 +151,11 @@ namespace VisitorManagement.Controllers
                 "icon: 'success', " +
                 "timer:'2000'})</script>";
 
-           
+
 
             TempData["notification"] = msg;
 
-           
+
         }
 
 

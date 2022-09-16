@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 using VisitorManagement.Data;
+using VisitorManagement.Operations;
 using VisitorManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +28,9 @@ builder.Services.AddTransient<IDBCalls, DBCalls>();
 
 //adding the dataSeeder class to the program  Transient lifetime services are created each time they are requested. This lifetime works best for lightweight, stateless services. Since they are created every time, they will use more memory & resources and can have negative impact on performance.
 builder.Services.AddTransient<IDataSeeder, DataSeeder>();
+
+//methods to generate a sweetalert
+builder.Services.AddTransient<ISweetAlert, SweetAlert>();
 
 //Scoped lifetime services are created once per request. For example, in MVC it creates one instance for each HTTP request, but it uses the same instance in the other calls within the same web request.
 
