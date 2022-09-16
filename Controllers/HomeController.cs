@@ -32,7 +32,7 @@ namespace VisitorManagement.Controllers
             //run the dataseeder
             //  _dataSeeder.SeedStaffAsync();
             //  _dataSeeder.SeedVisitorsAsync();
-
+            Alert("Welcome to the VM", "Welcome");//add this method
             ViewBag.Welcome = "Welcome to the VMS";
 
 
@@ -140,17 +140,17 @@ namespace VisitorManagement.Controllers
         /// <param name="id"></param>
         public void Alert(string name, string welcome)
         {
-            var msg = "<script language='javascript'>Swal.fire({" +
+            var msg = "<script type='text/javascript'>Swal.fire({" +
                 "title: Visitor Management System'," +
                 "text: '" + welcome + " " + name + "', " +
                 "icon: 'success', " +
                 "timer:'2000'})</script>";
 
-            var msg2 = welcome +" "+ name;
+           
 
             TempData["notification"] = msg;
 
-            ViewData["Message"] = msg2;
+           
         }
 
 

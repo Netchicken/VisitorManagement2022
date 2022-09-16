@@ -52,23 +52,18 @@
 
     </div>
 
-    @if (@ViewData["Message"] != null)
-    {
-        <script type="text/javascript" lang="javascript">
-        Swal.fire({
-            position: 'top',
-            icon: 'error',
-            title: 'Oops...',
-            text: '@ViewData["Message"] '
-        });
-        </script>
-    }
-
+   
 
 </div>
 
 @section Scripts
 {
+
+    @*Swal.fire({title: Visitor Management System',
+        text: 'Welcome Welcome to the VM', 
+        icon: 'error', 
+        timer:'2000'})*@
+
     @if (TempData["notification"] != null)
     {
         <script>src = "https://cdn.jsdelivr.net/npm/sweetalert2@11.1.7/dist/sweetalert2.all.min.js" ></script>

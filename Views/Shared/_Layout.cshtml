@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/VisitorManagement.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.min.css" />  @*https://www.jsdelivr.com/package/npm/sweetalert2?path=dist&tab=collection*@
+
 </head>
 <body>
     <header>
@@ -39,6 +41,9 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+
+            @Html.Partial("_NotificationPanel")
+
             @RenderBody()
         </main>
     </div>
@@ -51,8 +56,9 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script> @*add this script*@
-    <script>src = "https://cdn.jsdelivr.net/npm/sweetalert2@11.1.7/dist/sweetalert2.all.min.js" ></script>
+    <script src="~/js/sweetalert.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.all.min.js"></script> @*https://www.jsdelivr.com/package/npm/sweetalert2?path=dist&tab=collection add this script*@
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
