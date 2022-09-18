@@ -37,7 +37,8 @@ namespace VisitorManagement.Controllers
             //run the dataseeder
             //  _dataSeeder.SeedStaffAsync();
             //  _dataSeeder.SeedVisitorsAsync();
-            TempData["notification"] = _sweetalert.Alert("This is the Index Page", "This is a cool message", NotificationType.success);
+            TempData["notification"] = _sweetalert.AlertPopupWithImage("This is the Index Page", "This is a cool message", NotificationType.success);
+
             ViewBag.Welcome = "Welcome to the VMS";
 
 
@@ -86,7 +87,7 @@ namespace VisitorManagement.Controllers
                 await _context.SaveChangesAsync();
 
 
-                TempData["create"] = _sweetalert.Alert("Welcome to the College", visitor.FirstName + " visiting " + visitor.StaffName.Name, NotificationType.success);
+                TempData["create"] = _sweetalert.AlertPopup("Welcome to the College", visitor.FirstName + " visiting " + visitor.StaffName.Name, NotificationType.success);
 
 
                 //reload the page in the controller that is the index page.

@@ -1,1287 +1,4139 @@
-﻿; (function (window, document, undefined) {
-    "use strict";
-
-    (function e(t, n, r) { function s(o, u) { if (!n[o]) { if (!t[o]) { var a = typeof require == "function" && require; if (!u && a) return a(o, !0); if (i) return i(o, !0); var f = new Error("Cannot find module '" + o + "'"); throw f.code = "MODULE_NOT_FOUND", f } var l = n[o] = { exports: {} }; t[o][0].call(l.exports, function (e) { var n = t[o][1][e]; return s(n ? n : e) }, l, l.exports, e, t, n, r) } return n[o].exports } var i = typeof require == "function" && require; for (var o = 0; o < r.length; o++)s(r[o]); return s })({
-        1: [function (require, module, exports) {
-            'use strict';
-
-            var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-            // SweetAlert
-            // 2014-2015 (c) - Tristan Edwards
-            // github.com/t4t5/sweetalert
-
-            /*
-             * jQuery-like functions for manipulating the DOM
-             */
-
-            var _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation = require('./modules/handle-dom');
-
-            /*
-             * Handy utilities
-             */
-
-            var _extend$hexToRgb$isIE8$logStr$colorLuminance = require('./modules/utils');
-
-            /*
-             *  Handle sweetAlert's DOM elements
-             */
-
-            var _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition = require('./modules/handle-swal-dom');
-
-            // Handle button events and keyboard events
-
-            var _handleButton$handleConfirm$handleCancel = require('./modules/handle-click');
-
-            var _handleKeyDown = require('./modules/handle-key');
-
-            var _handleKeyDown2 = _interopRequireWildcard(_handleKeyDown);
-
-            // Default values
-
-            var _defaultParams = require('./modules/default-params');
-
-            var _defaultParams2 = _interopRequireWildcard(_defaultParams);
-
-            var _setParameters = require('./modules/set-params');
-
-            var _setParameters2 = _interopRequireWildcard(_setParameters);
-
-            /*
-             * Remember state in cases where opening and handling a modal will fiddle with it.
-             * (We also use window.previousActiveElement as a global variable)
-             */
-            var previousWindowKeyDown;
-            var lastFocusedButton;
-
-            /*
-             * Global sweetAlert function
-             * (this is what the user calls)
-             */
-            var sweetAlert, swal;
-
-            exports['default'] = sweetAlert = swal = function () {
-                var customizations = arguments[0];
-
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.addClass(document.body, 'stop-scrolling');
-                _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.resetInput();
-
-                /*
-                 * Use argument if defined or default value from params object otherwise.
-                 * Supports the case where a default value is boolean true and should be
-                 * overridden by a corresponding explicit argument which is boolean false.
-                 */
-                function argumentOrDefault(key) {
-                    var args = customizations;
-                    return args[key] === undefined ? _defaultParams2['default'][key] : args[key];
-                }
-
-                if (customizations === undefined) {
-                    _extend$hexToRgb$isIE8$logStr$colorLuminance.logStr('SweetAlert expects at least 1 attribute!');
-                    return false;
-                }
-
-                var params = _extend$hexToRgb$isIE8$logStr$colorLuminance.extend({}, _defaultParams2['default']);
-
-                switch (typeof customizations) {
-
-                    // Ex: swal("Hello", "Just testing", "info");
-                    case 'string':
-                        params.title = customizations;
-                        params.text = arguments[1] || '';
-                        params.type = arguments[2] || '';
-                        break;
-
-                    // Ex: swal({ title:"Hello", text: "Just testing", type: "info" });
-                    case 'object':
-                        if (customizations.title === undefined) {
-                            _extend$hexToRgb$isIE8$logStr$colorLuminance.logStr('Missing "title" argument!');
-                            return false;
-                        }
-
-                        params.title = customizations.title;
-
-                        for (var customName in _defaultParams2['default']) {
-                            params[customName] = argumentOrDefault(customName);
-                        }
-
-                        // Show "Confirm" instead of "OK" if cancel button is visible
-                        params.confirmButtonText = params.showCancelButton ? 'Confirm' : _defaultParams2['default'].confirmButtonText;
-                        params.confirmButtonText = argumentOrDefault('confirmButtonText');
-
-                        // Callback function when clicking on "OK"/"Cancel"
-                        params.doneFunction = arguments[1] || null;
-
-                        break;
-
-                    default:
-                        _extend$hexToRgb$isIE8$logStr$colorLuminance.logStr('Unexpected type of argument! Expected "string" or "object", got ' + typeof customizations);
-                        return false;
-
-                }
-
-                _setParameters2['default'](params);
-                _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.fixVerticalPosition();
-                _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.openModal(arguments[1]);
-
-                // Modal interactions
-                var modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-
-                /*
-                 * Make sure all modal buttons respond to all events
-                 */
-                var $buttons = modal.querySelectorAll('button');
-                var buttonEvents = ['onclick', 'onmouseover', 'onmouseout', 'onmousedown', 'onmouseup', 'onfocus'];
-                var onButtonEvent = function onButtonEvent(e) {
-                    return _handleButton$handleConfirm$handleCancel.handleButton(e, params, modal);
-                };
-
-                for (var btnIndex = 0; btnIndex < $buttons.length; btnIndex++) {
-                    for (var evtIndex = 0; evtIndex < buttonEvents.length; evtIndex++) {
-                        var btnEvt = buttonEvents[evtIndex];
-                        $buttons[btnIndex][btnEvt] = onButtonEvent;
-                    }
-                }
-
-                // Clicking outside the modal dismisses it (if allowed by user)
-                _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getOverlay().onclick = onButtonEvent;
-
-                previousWindowKeyDown = window.onkeydown;
-
-                var onKeyEvent = function onKeyEvent(e) {
-                    return _handleKeyDown2['default'](e, params, modal);
-                };
-                window.onkeydown = onKeyEvent;
-
-                window.onfocus = function () {
-                    // When the user has focused away and focused back from the whole window.
-                    setTimeout(function () {
-                        // Put in a timeout to jump out of the event sequence.
-                        // Calling focus() in the event sequence confuses things.
-                        if (lastFocusedButton !== undefined) {
-                            lastFocusedButton.focus();
-                            lastFocusedButton = undefined;
-                        }
-                    }, 0);
-                };
-
-                // Show alert with enabled buttons always
-                swal.enableButtons();
-            };
-
-            /*
-             * Set default params for each popup
-             * @param {Object} userParams
-             */
-            sweetAlert.setDefaults = swal.setDefaults = function (userParams) {
-                if (!userParams) {
-                    throw new Error('userParams is required');
-                }
-                if (typeof userParams !== 'object') {
-                    throw new Error('userParams has to be a object');
-                }
-
-                _extend$hexToRgb$isIE8$logStr$colorLuminance.extend(_defaultParams2['default'], userParams);
-            };
-
-            /*
-             * Animation when closing modal
-             */
-            sweetAlert.close = swal.close = function () {
-                var modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.fadeOut(_sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getOverlay(), 5);
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.fadeOut(modal, 5);
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass(modal, 'showSweetAlert');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.addClass(modal, 'hideSweetAlert');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass(modal, 'visible');
-
-                /*
-                 * Reset icon animations
-                 */
-                var $successIcon = modal.querySelector('.sa-icon.sa-success');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($successIcon, 'animate');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($successIcon.querySelector('.sa-tip'), 'animateSuccessTip');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($successIcon.querySelector('.sa-long'), 'animateSuccessLong');
-
-                var $errorIcon = modal.querySelector('.sa-icon.sa-error');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($errorIcon, 'animateErrorIcon');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($errorIcon.querySelector('.sa-x-mark'), 'animateXMark');
-
-                var $warningIcon = modal.querySelector('.sa-icon.sa-warning');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($warningIcon, 'pulseWarning');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($warningIcon.querySelector('.sa-body'), 'pulseWarningIns');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($warningIcon.querySelector('.sa-dot'), 'pulseWarningIns');
-
-                // Reset custom class (delay so that UI changes aren't visible)
-                setTimeout(function () {
-                    var customClass = modal.getAttribute('data-custom-class');
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass(modal, customClass);
-                }, 300);
-
-                // Make page scrollable again
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass(document.body, 'stop-scrolling');
-
-                // Reset the page to its previous state
-                window.onkeydown = previousWindowKeyDown;
-                if (window.previousActiveElement) {
-                    window.previousActiveElement.focus();
-                }
-                lastFocusedButton = undefined;
-                clearTimeout(modal.timeout);
-
-                return true;
-            };
-
-            /*
-             * Validation of the input field is done by user
-             * If something is wrong => call showInputError with errorMessage
-             */
-            sweetAlert.showInputError = swal.showInputError = function (errorMessage) {
-                var modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-
-                var $errorIcon = modal.querySelector('.sa-input-error');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.addClass($errorIcon, 'show');
-
-                var $errorContainer = modal.querySelector('.sa-error-container');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.addClass($errorContainer, 'show');
-
-                $errorContainer.querySelector('p').innerHTML = errorMessage;
-
-                setTimeout(function () {
-                    sweetAlert.enableButtons();
-                }, 1);
-
-                modal.querySelector('input').focus();
-            };
-
-            /*
-             * Reset input error DOM elements
-             */
-            sweetAlert.resetInputError = swal.resetInputError = function (event) {
-                // If press enter => ignore
-                if (event && event.keyCode === 13) {
-                    return false;
-                }
-
-                var $modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-
-                var $errorIcon = $modal.querySelector('.sa-input-error');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($errorIcon, 'show');
-
-                var $errorContainer = $modal.querySelector('.sa-error-container');
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide$isDescendant$getTopMargin$fadeIn$fadeOut$fireClick$stopEventPropagation.removeClass($errorContainer, 'show');
-            };
-
-            /*
-             * Disable confirm and cancel buttons
-             */
-            sweetAlert.disableButtons = swal.disableButtons = function (event) {
-                var modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-                var $confirmButton = modal.querySelector('button.confirm');
-                var $cancelButton = modal.querySelector('button.cancel');
-                $confirmButton.disabled = true;
-                $cancelButton.disabled = true;
-            };
-
-            /*
-             * Enable confirm and cancel buttons
-             */
-            sweetAlert.enableButtons = swal.enableButtons = function (event) {
-                var modal = _sweetAlertInitialize$getModal$getOverlay$getInput$setFocusStyle$openModal$resetInput$fixVerticalPosition.getModal();
-                var $confirmButton = modal.querySelector('button.confirm');
-                var $cancelButton = modal.querySelector('button.cancel');
-                $confirmButton.disabled = false;
-                $cancelButton.disabled = false;
-            };
-
-            if (typeof window !== 'undefined') {
-                // The 'handle-click' module requires
-                // that 'sweetAlert' was set as global.
-                window.sweetAlert = window.swal = sweetAlert;
-            } else {
-                _extend$hexToRgb$isIE8$logStr$colorLuminance.logStr('SweetAlert is a frontend module!');
-            }
-            module.exports = exports['default'];
-
-        }, { "./modules/default-params": 2, "./modules/handle-click": 3, "./modules/handle-dom": 4, "./modules/handle-key": 5, "./modules/handle-swal-dom": 6, "./modules/set-params": 8, "./modules/utils": 9 }], 2: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-            var defaultParams = {
-                title: '',
-                text: '',
-                type: null,
-                allowOutsideClick: false,
-                showConfirmButton: true,
-                showCancelButton: false,
-                closeOnConfirm: true,
-                closeOnCancel: true,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#8CD4F5',
-                cancelButtonText: 'Cancel',
-                imageUrl: null,
-                imageSize: null,
-                timer: null,
-                customClass: '',
-                html: false,
-                animation: true,
-                allowEscapeKey: true,
-                inputType: 'text',
-                inputPlaceholder: '',
-                inputValue: '',
-                showLoaderOnConfirm: false
-            };
-
-            exports['default'] = defaultParams;
-            module.exports = exports['default'];
-
-        }, {}], 3: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-
-            var _colorLuminance = require('./utils');
-
-            var _getModal = require('./handle-swal-dom');
-
-            var _hasClass$isDescendant = require('./handle-dom');
-
-            /*
-             * User clicked on "Confirm"/"OK" or "Cancel"
-             */
-            var handleButton = function handleButton(event, params, modal) {
-                var e = event || window.event;
-                var target = e.target || e.srcElement;
-
-                var targetedConfirm = target.className.indexOf('confirm') !== -1;
-                var targetedOverlay = target.className.indexOf('sweet-overlay') !== -1;
-                var modalIsVisible = _hasClass$isDescendant.hasClass(modal, 'visible');
-                var doneFunctionExists = params.doneFunction && modal.getAttribute('data-has-done-function') === 'true';
-
-                // Since the user can change the background-color of the confirm button programmatically,
-                // we must calculate what the color should be on hover/active
-                var normalColor, hoverColor, activeColor;
-                if (targetedConfirm && params.confirmButtonColor) {
-                    normalColor = params.confirmButtonColor;
-                    hoverColor = _colorLuminance.colorLuminance(normalColor, -0.04);
-                    activeColor = _colorLuminance.colorLuminance(normalColor, -0.14);
-                }
-
-                function shouldSetConfirmButtonColor(color) {
-                    if (targetedConfirm && params.confirmButtonColor) {
-                        target.style.backgroundColor = color;
-                    }
-                }
-
-                switch (e.type) {
-                    case 'mouseover':
-                        shouldSetConfirmButtonColor(hoverColor);
-                        break;
-
-                    case 'mouseout':
-                        shouldSetConfirmButtonColor(normalColor);
-                        break;
-
-                    case 'mousedown':
-                        shouldSetConfirmButtonColor(activeColor);
-                        break;
-
-                    case 'mouseup':
-                        shouldSetConfirmButtonColor(hoverColor);
-                        break;
-
-                    case 'focus':
-                        var $confirmButton = modal.querySelector('button.confirm');
-                        var $cancelButton = modal.querySelector('button.cancel');
-
-                        if (targetedConfirm) {
-                            $cancelButton.style.boxShadow = 'none';
-                        } else {
-                            $confirmButton.style.boxShadow = 'none';
-                        }
-                        break;
-
-                    case 'click':
-                        var clickedOnModal = modal === target;
-                        var clickedOnModalChild = _hasClass$isDescendant.isDescendant(modal, target);
-
-                        // Ignore click outside if allowOutsideClick is false
-                        if (!clickedOnModal && !clickedOnModalChild && modalIsVisible && !params.allowOutsideClick) {
-                            break;
-                        }
-
-                        if (targetedConfirm && doneFunctionExists && modalIsVisible) {
-                            handleConfirm(modal, params);
-                        } else if (doneFunctionExists && modalIsVisible || targetedOverlay) {
-                            handleCancel(modal, params);
-                        } else if (_hasClass$isDescendant.isDescendant(modal, target) && target.tagName === 'BUTTON') {
-                            sweetAlert.close();
-                        }
-                        break;
-                }
-            };
-
-            /*
-             *  User clicked on "Confirm"/"OK"
-             */
-            var handleConfirm = function handleConfirm(modal, params) {
-                var callbackValue = true;
-
-                if (_hasClass$isDescendant.hasClass(modal, 'show-input')) {
-                    callbackValue = modal.querySelector('input').value;
-
-                    if (!callbackValue) {
-                        callbackValue = '';
-                    }
-                }
-
-                params.doneFunction(callbackValue);
-
-                if (params.closeOnConfirm) {
-                    sweetAlert.close();
-                }
-                // Disable cancel and confirm button if the parameter is true
-                if (params.showLoaderOnConfirm) {
-                    sweetAlert.disableButtons();
-                }
-            };
-
-            /*
-             *  User clicked on "Cancel"
-             */
-            var handleCancel = function handleCancel(modal, params) {
-                // Check if callback function expects a parameter (to track cancel actions)
-                var functionAsStr = String(params.doneFunction).replace(/\s/g, '');
-                var functionHandlesCancel = functionAsStr.substring(0, 9) === 'function(' && functionAsStr.substring(9, 10) !== ')';
-
-                if (functionHandlesCancel) {
-                    params.doneFunction(false);
-                }
-
-                if (params.closeOnCancel) {
-                    sweetAlert.close();
-                }
-            };
-
-            exports['default'] = {
-                handleButton: handleButton,
-                handleConfirm: handleConfirm,
-                handleCancel: handleCancel
-            };
-            module.exports = exports['default'];
-
-        }, { "./handle-dom": 4, "./handle-swal-dom": 6, "./utils": 9 }], 4: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-            var hasClass = function hasClass(elem, className) {
-                return new RegExp(' ' + className + ' ').test(' ' + elem.className + ' ');
-            };
-
-            var addClass = function addClass(elem, className) {
-                if (!hasClass(elem, className)) {
-                    elem.className += ' ' + className;
-                }
-            };
-
-            var removeClass = function removeClass(elem, className) {
-                var newClass = ' ' + elem.className.replace(/[\t\r\n]/g, ' ') + ' ';
-                if (hasClass(elem, className)) {
-                    while (newClass.indexOf(' ' + className + ' ') >= 0) {
-                        newClass = newClass.replace(' ' + className + ' ', ' ');
-                    }
-                    elem.className = newClass.replace(/^\s+|\s+$/g, '');
-                }
-            };
-
-            var escapeHtml = function escapeHtml(str) {
-                var div = document.createElement('div');
-                div.appendChild(document.createTextNode(str));
-                return div.innerHTML;
-            };
-
-            var _show = function _show(elem) {
-                elem.style.opacity = '';
-                elem.style.display = 'block';
-            };
-
-            var show = function show(elems) {
-                if (elems && !elems.length) {
-                    return _show(elems);
-                }
-                for (var i = 0; i < elems.length; ++i) {
-                    _show(elems[i]);
-                }
-            };
-
-            var _hide = function _hide(elem) {
-                elem.style.opacity = '';
-                elem.style.display = 'none';
-            };
-
-            var hide = function hide(elems) {
-                if (elems && !elems.length) {
-                    return _hide(elems);
-                }
-                for (var i = 0; i < elems.length; ++i) {
-                    _hide(elems[i]);
-                }
-            };
-
-            var isDescendant = function isDescendant(parent, child) {
-                var node = child.parentNode;
-                while (node !== null) {
-                    if (node === parent) {
-                        return true;
-                    }
-                    node = node.parentNode;
-                }
-                return false;
-            };
-
-            var getTopMargin = function getTopMargin(elem) {
-                elem.style.left = '-9999px';
-                elem.style.display = 'block';
-
-                var height = elem.clientHeight,
-                    padding;
-                if (typeof getComputedStyle !== 'undefined') {
-                    // IE 8
-                    padding = parseInt(getComputedStyle(elem).getPropertyValue('padding-top'), 10);
-                } else {
-                    padding = parseInt(elem.currentStyle.padding);
-                }
-
-                elem.style.left = '';
-                elem.style.display = 'none';
-                return '-' + parseInt((height + padding) / 2) + 'px';
-            };
-
-            var fadeIn = function fadeIn(elem, interval) {
-                if (+elem.style.opacity < 1) {
-                    interval = interval || 16;
-                    elem.style.opacity = 0;
-                    elem.style.display = 'block';
-                    var last = +new Date();
-                    var tick = (function (_tick) {
-                        function tick() {
-                            return _tick.apply(this, arguments);
-                        }
-
-                        tick.toString = function () {
-                            return _tick.toString();
-                        };
-
-                        return tick;
-                    })(function () {
-                        elem.style.opacity = +elem.style.opacity + (new Date() - last) / 100;
-                        last = +new Date();
-
-                        if (+elem.style.opacity < 1) {
-                            setTimeout(tick, interval);
-                        }
-                    });
-                    tick();
-                }
-                elem.style.display = 'block'; //fallback IE8
-            };
-
-            var fadeOut = function fadeOut(elem, interval) {
-                interval = interval || 16;
-                elem.style.opacity = 1;
-                var last = +new Date();
-                var tick = (function (_tick2) {
-                    function tick() {
-                        return _tick2.apply(this, arguments);
-                    }
-
-                    tick.toString = function () {
-                        return _tick2.toString();
-                    };
-
-                    return tick;
-                })(function () {
-                    elem.style.opacity = +elem.style.opacity - (new Date() - last) / 100;
-                    last = +new Date();
-
-                    if (+elem.style.opacity > 0) {
-                        setTimeout(tick, interval);
-                    } else {
-                        elem.style.display = 'none';
-                    }
-                });
-                tick();
-            };
-
-            var fireClick = function fireClick(node) {
-                // Taken from http://www.nonobtrusive.com/2011/11/29/programatically-fire-crossbrowser-click-event-with-javascript/
-                // Then fixed for today's Chrome browser.
-                if (typeof MouseEvent === 'function') {
-                    // Up-to-date approach
-                    var mevt = new MouseEvent('click', {
-                        view: window,
-                        bubbles: false,
-                        cancelable: true
-                    });
-                    node.dispatchEvent(mevt);
-                } else if (document.createEvent) {
-                    // Fallback
-                    var evt = document.createEvent('MouseEvents');
-                    evt.initEvent('click', false, false);
-                    node.dispatchEvent(evt);
-                } else if (document.createEventObject) {
-                    node.fireEvent('onclick');
-                } else if (typeof node.onclick === 'function') {
-                    node.onclick();
-                }
-            };
-
-            var stopEventPropagation = function stopEventPropagation(e) {
-                // In particular, make sure the space bar doesn't scroll the main window.
-                if (typeof e.stopPropagation === 'function') {
-                    e.stopPropagation();
-                    e.preventDefault();
-                } else if (window.event && window.event.hasOwnProperty('cancelBubble')) {
-                    window.event.cancelBubble = true;
-                }
-            };
-
-            exports.hasClass = hasClass;
-            exports.addClass = addClass;
-            exports.removeClass = removeClass;
-            exports.escapeHtml = escapeHtml;
-            exports._show = _show;
-            exports.show = show;
-            exports._hide = _hide;
-            exports.hide = hide;
-            exports.isDescendant = isDescendant;
-            exports.getTopMargin = getTopMargin;
-            exports.fadeIn = fadeIn;
-            exports.fadeOut = fadeOut;
-            exports.fireClick = fireClick;
-            exports.stopEventPropagation = stopEventPropagation;
-
-        }, {}], 5: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-
-            var _stopEventPropagation$fireClick = require('./handle-dom');
-
-            var _setFocusStyle = require('./handle-swal-dom');
-
-            var handleKeyDown = function handleKeyDown(event, params, modal) {
-                var e = event || window.event;
-                var keyCode = e.keyCode || e.which;
-
-                var $okButton = modal.querySelector('button.confirm');
-                var $cancelButton = modal.querySelector('button.cancel');
-                var $modalButtons = modal.querySelectorAll('button[tabindex]');
-
-                if ([9, 13, 32, 27].indexOf(keyCode) === -1) {
-                    // Don't do work on keys we don't care about.
-                    return;
-                }
-
-                var $targetElement = e.target || e.srcElement;
-
-                var btnIndex = -1; // Find the button - note, this is a nodelist, not an array.
-                for (var i = 0; i < $modalButtons.length; i++) {
-                    if ($targetElement === $modalButtons[i]) {
-                        btnIndex = i;
-                        break;
-                    }
-                }
-
-                if (keyCode === 9) {
-                    // TAB
-                    if (btnIndex === -1) {
-                        // No button focused. Jump to the confirm button.
-                        $targetElement = $okButton;
-                    } else {
-                        // Cycle to the next button
-                        if (btnIndex === $modalButtons.length - 1) {
-                            $targetElement = $modalButtons[0];
-                        } else {
-                            $targetElement = $modalButtons[btnIndex + 1];
-                        }
-                    }
-
-                    _stopEventPropagation$fireClick.stopEventPropagation(e);
-                    $targetElement.focus();
-
-                    if (params.confirmButtonColor) {
-                        _setFocusStyle.setFocusStyle($targetElement, params.confirmButtonColor);
-                    }
-                } else {
-                    if (keyCode === 13) {
-                        if ($targetElement.tagName === 'INPUT') {
-                            $targetElement = $okButton;
-                            $okButton.focus();
-                        }
-
-                        if (btnIndex === -1) {
-                            // ENTER/SPACE clicked outside of a button.
-                            $targetElement = $okButton;
-                        } else {
-                            // Do nothing - let the browser handle it.
-                            $targetElement = undefined;
-                        }
-                    } else if (keyCode === 27 && params.allowEscapeKey === true) {
-                        $targetElement = $cancelButton;
-                        _stopEventPropagation$fireClick.fireClick($targetElement, e);
-                    } else {
-                        // Fallback - let the browser handle it.
-                        $targetElement = undefined;
-                    }
-                }
-            };
-
-            exports['default'] = handleKeyDown;
-            module.exports = exports['default'];
-
-        }, { "./handle-dom": 4, "./handle-swal-dom": 6 }], 6: [function (require, module, exports) {
-            'use strict';
-
-            var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-
-            var _hexToRgb = require('./utils');
-
-            var _removeClass$getTopMargin$fadeIn$show$addClass = require('./handle-dom');
-
-            var _defaultParams = require('./default-params');
-
-            var _defaultParams2 = _interopRequireWildcard(_defaultParams);
-
-            /*
-             * Add modal + overlay to DOM
-             */
-
-            var _injectedHTML = require('./injected-html');
-
-            var _injectedHTML2 = _interopRequireWildcard(_injectedHTML);
-
-            var modalClass = '.sweet-alert';
-            var overlayClass = '.sweet-overlay';
-
-            var sweetAlertInitialize = function sweetAlertInitialize() {
-                var sweetWrap = document.createElement('div');
-                sweetWrap.innerHTML = _injectedHTML2['default'];
-
-                // Append elements to body
-                while (sweetWrap.firstChild) {
-                    document.body.appendChild(sweetWrap.firstChild);
-                }
-            };
-
-            /*
-             * Get DOM element of modal
-             */
-            var getModal = (function (_getModal) {
-                function getModal() {
-                    return _getModal.apply(this, arguments);
-                }
-
-                getModal.toString = function () {
-                    return _getModal.toString();
-                };
-
-                return getModal;
-            })(function () {
-                var $modal = document.querySelector(modalClass);
-
-                if (!$modal) {
-                    sweetAlertInitialize();
-                    $modal = getModal();
-                }
-
-                return $modal;
-            });
-
-            /*
-             * Get DOM element of input (in modal)
-             */
-            var getInput = function getInput() {
-                var $modal = getModal();
-                if ($modal) {
-                    return $modal.querySelector('input');
-                }
-            };
-
-            /*
-             * Get DOM element of overlay
-             */
-            var getOverlay = function getOverlay() {
-                return document.querySelector(overlayClass);
-            };
-
-            /*
-             * Add box-shadow style to button (depending on its chosen bg-color)
-             */
-            var setFocusStyle = function setFocusStyle($button, bgColor) {
-                var rgbColor = _hexToRgb.hexToRgb(bgColor);
-                $button.style.boxShadow = '0 0 2px rgba(' + rgbColor + ', 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.05)';
-            };
-
-            /*
-             * Animation when opening modal
-             */
-            var openModal = function openModal(callback) {
-                var $modal = getModal();
-                _removeClass$getTopMargin$fadeIn$show$addClass.fadeIn(getOverlay(), 10);
-                _removeClass$getTopMargin$fadeIn$show$addClass.show($modal);
-                _removeClass$getTopMargin$fadeIn$show$addClass.addClass($modal, 'showSweetAlert');
-                _removeClass$getTopMargin$fadeIn$show$addClass.removeClass($modal, 'hideSweetAlert');
-
-                window.previousActiveElement = document.activeElement;
-                var $okButton = $modal.querySelector('button.confirm');
-                $okButton.focus();
-
-                setTimeout(function () {
-                    _removeClass$getTopMargin$fadeIn$show$addClass.addClass($modal, 'visible');
-                }, 500);
-
-                var timer = $modal.getAttribute('data-timer');
-
-                if (timer !== 'null' && timer !== '') {
-                    var timerCallback = callback;
-                    $modal.timeout = setTimeout(function () {
-                        var doneFunctionExists = (timerCallback || null) && $modal.getAttribute('data-has-done-function') === 'true';
-                        if (doneFunctionExists) {
-                            timerCallback(null);
-                        } else {
-                            sweetAlert.close();
-                        }
-                    }, timer);
-                }
-            };
-
-            /*
-             * Reset the styling of the input
-             * (for example if errors have been shown)
-             */
-            var resetInput = function resetInput() {
-                var $modal = getModal();
-                var $input = getInput();
-
-                _removeClass$getTopMargin$fadeIn$show$addClass.removeClass($modal, 'show-input');
-                $input.value = _defaultParams2['default'].inputValue;
-                $input.setAttribute('type', _defaultParams2['default'].inputType);
-                $input.setAttribute('placeholder', _defaultParams2['default'].inputPlaceholder);
-
-                resetInputError();
-            };
-
-            var resetInputError = function resetInputError(event) {
-                // If press enter => ignore
-                if (event && event.keyCode === 13) {
-                    return false;
-                }
-
-                var $modal = getModal();
-
-                var $errorIcon = $modal.querySelector('.sa-input-error');
-                _removeClass$getTopMargin$fadeIn$show$addClass.removeClass($errorIcon, 'show');
-
-                var $errorContainer = $modal.querySelector('.sa-error-container');
-                _removeClass$getTopMargin$fadeIn$show$addClass.removeClass($errorContainer, 'show');
-            };
-
-            /*
-             * Set "margin-top"-property on modal based on its computed height
-             */
-            var fixVerticalPosition = function fixVerticalPosition() {
-                var $modal = getModal();
-                $modal.style.marginTop = _removeClass$getTopMargin$fadeIn$show$addClass.getTopMargin(getModal());
-            };
-
-            exports.sweetAlertInitialize = sweetAlertInitialize;
-            exports.getModal = getModal;
-            exports.getOverlay = getOverlay;
-            exports.getInput = getInput;
-            exports.setFocusStyle = setFocusStyle;
-            exports.openModal = openModal;
-            exports.resetInput = resetInput;
-            exports.resetInputError = resetInputError;
-            exports.fixVerticalPosition = fixVerticalPosition;
-
-        }, { "./default-params": 2, "./handle-dom": 4, "./injected-html": 7, "./utils": 9 }], 7: [function (require, module, exports) {
-            "use strict";
-
-            Object.defineProperty(exports, "__esModule", {
-                value: true
-            });
-            var injectedHTML =
-
-                // Dark overlay
-                "<div class=\"sweet-overlay\" tabIndex=\"-1\"></div>" +
-
-                // Modal
-                "<div class=\"sweet-alert\">" +
-
-                // Error icon
-                "<div class=\"sa-icon sa-error\">\n      <span class=\"sa-x-mark\">\n        <span class=\"sa-line sa-left\"></span>\n        <span class=\"sa-line sa-right\"></span>\n      </span>\n    </div>" +
-
-                // Warning icon
-                "<div class=\"sa-icon sa-warning\">\n      <span class=\"sa-body\"></span>\n      <span class=\"sa-dot\"></span>\n    </div>" +
-
-                // Info icon
-                "<div class=\"sa-icon sa-info\"></div>" +
-
-                // Success icon
-                "<div class=\"sa-icon sa-success\">\n      <span class=\"sa-line sa-tip\"></span>\n      <span class=\"sa-line sa-long\"></span>\n\n      <div class=\"sa-placeholder\"></div>\n      <div class=\"sa-fix\"></div>\n    </div>" + "<div class=\"sa-icon sa-custom\"></div>" +
-
-                // Title, text and input
-                "<h2>Title</h2>\n    <p>Text</p>\n    <fieldset>\n      <input type=\"text\" tabIndex=\"3\" />\n      <div class=\"sa-input-error\"></div>\n    </fieldset>" +
-
-                // Input errors
-                "<div class=\"sa-error-container\">\n      <div class=\"icon\">!</div>\n      <p>Not valid!</p>\n    </div>" +
-
-                // Cancel and confirm buttons
-                "<div class=\"sa-button-container\">\n      <button class=\"cancel\" tabIndex=\"2\">Cancel</button>\n      <div class=\"sa-confirm-button-container\">\n        <button class=\"confirm\" tabIndex=\"1\">OK</button>" +
-
-                // Loading animation
-                "<div class=\"la-ball-fall\">\n          <div></div>\n          <div></div>\n          <div></div>\n        </div>\n      </div>\n    </div>" +
-
-                // End of modal
-                "</div>";
-
-            exports["default"] = injectedHTML;
-            module.exports = exports["default"];
-
-        }, {}], 8: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-
-            var _isIE8 = require('./utils');
-
-            var _getModal$getInput$setFocusStyle = require('./handle-swal-dom');
-
-            var _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide = require('./handle-dom');
-
-            var alertTypes = ['error', 'warning', 'info', 'success', 'input', 'prompt'];
-
-            /*
-             * Set type, text and actions on modal
-             */
-            var setParameters = function setParameters(params) {
-                var modal = _getModal$getInput$setFocusStyle.getModal();
-
-                var $title = modal.querySelector('h2');
-                var $text = modal.querySelector('p');
-                var $cancelBtn = modal.querySelector('button.cancel');
-                var $confirmBtn = modal.querySelector('button.confirm');
-
-                /*
-                 * Title
-                 */
-                $title.innerHTML = params.html ? params.title : _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.title).split('\n').join('<br>');
-
-                /*
-                 * Text
-                 */
-                $text.innerHTML = params.html ? params.text : _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.text || '').split('\n').join('<br>');
-                if (params.text) _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.show($text);
-
-                /*
-                 * Custom class
-                 */
-                if (params.customClass) {
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass(modal, params.customClass);
-                    modal.setAttribute('data-custom-class', params.customClass);
-                } else {
-                    // Find previously set classes and remove them
-                    var customClass = modal.getAttribute('data-custom-class');
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.removeClass(modal, customClass);
-                    modal.setAttribute('data-custom-class', '');
-                }
-
-                /*
-                 * Icon
-                 */
-                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.hide(modal.querySelectorAll('.sa-icon'));
-
-                if (params.type && !_isIE8.isIE8()) {
-                    var _ret = (function () {
-
-                        var validType = false;
-
-                        for (var i = 0; i < alertTypes.length; i++) {
-                            if (params.type === alertTypes[i]) {
-                                validType = true;
-                                break;
-                            }
-                        }
-
-                        if (!validType) {
-                            logStr('Unknown alert type: ' + params.type);
-                            return {
-                                v: false
-                            };
-                        }
-
-                        var typesWithIcons = ['success', 'error', 'warning', 'info'];
-                        var $icon = undefined;
-
-                        if (typesWithIcons.indexOf(params.type) !== -1) {
-                            $icon = modal.querySelector('.sa-icon.' + 'sa-' + params.type);
-                            _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.show($icon);
-                        }
-
-                        var $input = _getModal$getInput$setFocusStyle.getInput();
-
-                        // Animate icon
-                        switch (params.type) {
-
-                            case 'success':
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon, 'animate');
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon.querySelector('.sa-tip'), 'animateSuccessTip');
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon.querySelector('.sa-long'), 'animateSuccessLong');
-                                break;
-
-                            case 'error':
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon, 'animateErrorIcon');
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon.querySelector('.sa-x-mark'), 'animateXMark');
-                                break;
-
-                            case 'warning':
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon, 'pulseWarning');
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon.querySelector('.sa-body'), 'pulseWarningIns');
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass($icon.querySelector('.sa-dot'), 'pulseWarningIns');
-                                break;
-
-                            case 'input':
-                            case 'prompt':
-                                $input.setAttribute('type', params.inputType);
-                                $input.value = params.inputValue;
-                                $input.setAttribute('placeholder', params.inputPlaceholder);
-                                _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.addClass(modal, 'show-input');
-                                setTimeout(function () {
-                                    $input.focus();
-                                    $input.addEventListener('keyup', swal.resetInputError);
-                                }, 400);
-                                break;
-                        }
-                    })();
-
-                    if (typeof _ret === 'object') {
-                        return _ret.v;
-                    }
-                }
-
-                /*
-                 * Custom image
-                 */
-                if (params.imageUrl) {
-                    var $customIcon = modal.querySelector('.sa-icon.sa-custom');
-
-                    $customIcon.style.backgroundImage = 'url(' + params.imageUrl + ')';
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.show($customIcon);
-
-                    var _imgWidth = 80;
-                    var _imgHeight = 80;
-
-                    if (params.imageSize) {
-                        var dimensions = params.imageSize.toString().split('x');
-                        var imgWidth = dimensions[0];
-                        var imgHeight = dimensions[1];
-
-                        if (!imgWidth || !imgHeight) {
-                            logStr('Parameter imageSize expects value with format WIDTHxHEIGHT, got ' + params.imageSize);
-                        } else {
-                            _imgWidth = imgWidth;
-                            _imgHeight = imgHeight;
-                        }
-                    }
-
-                    $customIcon.setAttribute('style', $customIcon.getAttribute('style') + 'width:' + _imgWidth + 'px; height:' + _imgHeight + 'px');
-                }
-
-                /*
-                 * Show cancel button?
-                 */
-                modal.setAttribute('data-has-cancel-button', params.showCancelButton);
-                if (params.showCancelButton) {
-                    $cancelBtn.style.display = 'inline-block';
-                } else {
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.hide($cancelBtn);
-                }
-
-                /*
-                 * Show confirm button?
-                 */
-                modal.setAttribute('data-has-confirm-button', params.showConfirmButton);
-                if (params.showConfirmButton) {
-                    $confirmBtn.style.display = 'inline-block';
-                } else {
-                    _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.hide($confirmBtn);
-                }
-
-                /*
-                 * Custom text on cancel/confirm buttons
-                 */
-                if (params.cancelButtonText) {
-                    $cancelBtn.innerHTML = _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.cancelButtonText);
-                }
-                if (params.confirmButtonText) {
-                    $confirmBtn.innerHTML = _hasClass$addClass$removeClass$escapeHtml$_show$show$_hide$hide.escapeHtml(params.confirmButtonText);
-                }
-
-                /*
-                 * Custom color on confirm button
-                 */
-                if (params.confirmButtonColor) {
-                    // Set confirm button to selected background color
-                    $confirmBtn.style.backgroundColor = params.confirmButtonColor;
-
-                    // Set the confirm button color to the loading ring
-                    $confirmBtn.style.borderLeftColor = params.confirmLoadingButtonColor;
-                    $confirmBtn.style.borderRightColor = params.confirmLoadingButtonColor;
-
-                    // Set box-shadow to default focused button
-                    _getModal$getInput$setFocusStyle.setFocusStyle($confirmBtn, params.confirmButtonColor);
-                }
-
-                /*
-                 * Allow outside click
-                 */
-                modal.setAttribute('data-allow-outside-click', params.allowOutsideClick);
-
-                /*
-                 * Callback function
-                 */
-                var hasDoneFunction = params.doneFunction ? true : false;
-                modal.setAttribute('data-has-done-function', hasDoneFunction);
-
-                /*
-                 * Animation
-                 */
-                if (!params.animation) {
-                    modal.setAttribute('data-animation', 'none');
-                } else if (typeof params.animation === 'string') {
-                    modal.setAttribute('data-animation', params.animation); // Custom animation
-                } else {
-                    modal.setAttribute('data-animation', 'pop');
-                }
-
-                /*
-                 * Timer
-                 */
-                modal.setAttribute('data-timer', params.timer);
-            };
-
-            exports['default'] = setParameters;
-            module.exports = exports['default'];
-
-        }, { "./handle-dom": 4, "./handle-swal-dom": 6, "./utils": 9 }], 9: [function (require, module, exports) {
-            'use strict';
-
-            Object.defineProperty(exports, '__esModule', {
-                value: true
-            });
-            /*
-             * Allow user to pass their own params
-             */
-            var extend = function extend(a, b) {
-                for (var key in b) {
-                    if (b.hasOwnProperty(key)) {
-                        a[key] = b[key];
-                    }
-                }
-                return a;
-            };
-
-            /*
-             * Convert HEX codes to RGB values (#000000 -> rgb(0,0,0))
-             */
-            var hexToRgb = function hexToRgb(hex) {
-                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? parseInt(result[1], 16) + ', ' + parseInt(result[2], 16) + ', ' + parseInt(result[3], 16) : null;
-            };
-
-            /*
-             * Check if the user is using Internet Explorer 8 (for fallbacks)
-             */
-            var isIE8 = function isIE8() {
-                return window.attachEvent && !window.addEventListener;
-            };
-
-            /*
-             * IE compatible logging for developers
-             */
-            var logStr = function logStr(string) {
-                if (window.console) {
-                    // IE...
-                    window.console.log('SweetAlert: ' + string);
-                }
-            };
-
-            /*
-             * Set hover, active and focus-states for buttons 
-             * (source: http://www.sitepoint.com/javascript-generate-lighter-darker-color)
-             */
-            var colorLuminance = function colorLuminance(hex, lum) {
-                // Validate hex string
-                hex = String(hex).replace(/[^0-9a-f]/gi, '');
-                if (hex.length < 6) {
-                    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-                }
-                lum = lum || 0;
-
-                // Convert to decimal and change luminosity
-                var rgb = '#';
-                var c;
-                var i;
-
-                for (i = 0; i < 3; i++) {
-                    c = parseInt(hex.substr(i * 2, 2), 16);
-                    c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
-                    rgb += ('00' + c).substr(c.length);
-                }
-
-                return rgb;
-            };
-
-            exports.extend = extend;
-            exports.hexToRgb = hexToRgb;
-            exports.isIE8 = isIE8;
-            exports.logStr = logStr;
-            exports.colorLuminance = colorLuminance;
-
-        }, {}]
-    }, {}, [1])
-    //# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm5vZGVfbW9kdWxlcy9icm93c2VyaWZ5L25vZGVfbW9kdWxlcy9icm93c2VyLXBhY2svX3ByZWx1ZGUuanMiLCIvVXNlcnMvVHJpc3Rhbi9kZXYvU3dlZXRBbGVydC9kZXYvc3dlZXRhbGVydC5lczYuanMiLCIvVXNlcnMvVHJpc3Rhbi9kZXYvU3dlZXRBbGVydC9kZXYvbW9kdWxlcy9kZWZhdWx0LXBhcmFtcy5qcyIsIi9Vc2Vycy9UcmlzdGFuL2Rldi9Td2VldEFsZXJ0L2Rldi9tb2R1bGVzL2hhbmRsZS1jbGljay5qcyIsIi9Vc2Vycy9UcmlzdGFuL2Rldi9Td2VldEFsZXJ0L2Rldi9tb2R1bGVzL2hhbmRsZS1kb20uanMiLCIvVXNlcnMvVHJpc3Rhbi9kZXYvU3dlZXRBbGVydC9kZXYvbW9kdWxlcy9oYW5kbGUta2V5LmpzIiwiL1VzZXJzL1RyaXN0YW4vZGV2L1N3ZWV0QWxlcnQvZGV2L21vZHVsZXMvaGFuZGxlLXN3YWwtZG9tLmpzIiwiL1VzZXJzL1RyaXN0YW4vZGV2L1N3ZWV0QWxlcnQvZGV2L21vZHVsZXMvaW5qZWN0ZWQtaHRtbC5qcyIsIi9Vc2Vycy9UcmlzdGFuL2Rldi9Td2VldEFsZXJ0L2Rldi9tb2R1bGVzL3NldC1wYXJhbXMuanMiLCIvVXNlcnMvVHJpc3Rhbi9kZXYvU3dlZXRBbGVydC9kZXYvbW9kdWxlcy91dGlscy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7Ozs7Ozs7Ozs7Ozs7OztzSkNnQk8sc0JBQXNCOzs7Ozs7MkRBV3RCLGlCQUFpQjs7Ozs7O3dIQWNqQiwyQkFBMkI7Ozs7dURBSXdCLHdCQUF3Qjs7NkJBQ3hELHNCQUFzQjs7Ozs7OzZCQUl0QiwwQkFBMEI7Ozs7NkJBQzFCLHNCQUFzQjs7Ozs7Ozs7QUFNaEQsSUFBSSxxQkFBcUIsQ0FBQztBQUMxQixJQUFJLGlCQUFpQixDQUFDOzs7Ozs7QUFPdEIsSUFBSSxVQUFVLEVBQUUsSUFBSSxDQUFDOztxQkFFTixVQUFVLEdBQUcsSUFBSSxHQUFHLFlBQVc7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RyxDQUFDLENBQUMsRUFBRSxDQUFDLEdBQUcsQ0FBQyxHQUFHLEdBQUcsQ0FBQyxFQUFFLEdBQUcsQ0FBQyxDQUFDLENBQUMsUUFBUSxDQUFDLEVBQUUsQ0FBQyxDQUFDO0FBQ3JFLE9BQUcsSUFBSSxDQUFDLElBQUksR0FBRyxDQUFDLENBQUEsQ0FBRSxNQUFNLENBQUMsQ0FBQyxDQUFDLE1BQU0sQ0FBQyxDQUFDO0dBQ3BDOztBQUVELFNBQU8sR0FBRyxDQUFDO0NBQ1osQ0FBQzs7UUFJQSxNQUFNLEdBQU4sTUFBTTtRQUNOLFFBQVEsR0FBUixRQUFRO1FBQ1IsS0FBSyxHQUFMLEtBQUs7UUFDTCxNQUFNLEdBQU4sTUFBTTtRQUNOLGNBQWMsR0FBZCxjQUFjIiwiZmlsZSI6ImdlbmVyYXRlZC5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzQ29udGVudCI6WyIoZnVuY3Rpb24gZSh0LG4scil7ZnVuY3Rpb24gcyhvLHUpe2lmKCFuW29dKXtpZighdFtvXSl7dmFyIGE9dHlwZW9mIHJlcXVpcmU9PVwiZnVuY3Rpb25cIiYmcmVxdWlyZTtpZighdSYmYSlyZXR1cm4gYShvLCEwKTtpZihpKXJldHVybiBpKG8sITApO3ZhciBmPW5ldyBFcnJvcihcIkNhbm5vdCBmaW5kIG1vZHVsZSAnXCIrbytcIidcIik7dGhyb3cgZi5jb2RlPVwiTU9EVUxFX05PVF9GT1VORFwiLGZ9dmFyIGw9bltvXT17ZXhwb3J0czp7fX07dFtvXVswXS5jYWxsKGwuZXhwb3J0cyxmdW5jdGlvbihlKXt2YXIgbj10W29dWzFdW2VdO3JldHVybiBzKG4/bjplKX0sbCxsLmV4cG9ydHMsZSx0LG4scil9cmV0dXJuIG5bb10uZXhwb3J0c312YXIgaT10eXBlb2YgcmVxdWlyZT09XCJmdW5jdGlvblwiJiZyZXF1aXJlO2Zvcih2YXIgbz0wO288ci5sZW5ndGg7bysrKXMocltvXSk7cmV0dXJuIHN9KSIsIi8vIFN3ZWV0QWxlcnRcbi8vIDIwMTQtMjAxNSAoYykgLSBUcmlzdGFuIEVkd2FyZHNcbi8vIGdpdGh1Yi5jb20vdDR0NS9zd2VldGFsZXJ0XG5cbi8qXG4gKiBqUXVlcnktbGlrZSBmdW5jdGlvbnMgZm9yIG1hbmlwdWxhdGluZyB0aGUgRE9NXG4gKi9cbmltcG9ydCB7XG4gIGhhc0NsYXNzLCBhZGRDbGFzcywgcmVtb3ZlQ2xhc3MsXG4gIGVzY2FwZUh0bWwsXG4gIF9zaG93LCBzaG93LCBfaGlkZSwgaGlkZSxcbiAgaXNEZXNjZW5kYW50LFxuICBnZXRUb3BNYXJnaW4sXG4gIGZhZGVJbiwgZmFkZU91dCxcbiAgZmlyZUNsaWNrLFxuICBzdG9wRXZlbnRQcm9wYWdhdGlvblxufSBmcm9tICcuL21vZHVsZXMvaGFuZGxlLWRvbSc7XG5cbi8qXG4gKiBIYW5keSB1dGlsaXRpZXNcbiAqL1xuaW1wb3J0IHtcbiAgZXh0ZW5kLFxuICBoZXhUb1JnYixcbiAgaXNJRTgsXG4gIGxvZ1N0cixcbiAgY29sb3JMdW1pbmFuY2Vcbn0gZnJvbSAnLi9tb2R1bGVzL3V0aWxzJztcblxuLypcbiAqICBIYW5kbGUgc3dlZXRBbGVydCdzIERPTSBlbGVtZW50c1xuICovXG5pbXBvcnQge1xuICBzd2VldEFsZXJ0SW5pdGlhbGl6ZSxcbiAgZ2V0TW9kYWwsXG4gIGdldE92ZXJsYXksXG4gIGdldElucHV0LFxuICBzZXRGb2N1c1N0eWxlLFxuICBvcGVuTW9kYWwsXG4gIHJlc2V0SW5wdXQsXG4gIGZpeFZlcnRpY2FsUG9zaXRpb25cbn0gZnJvbSAnLi9tb2R1bGVzL2hhbmRsZS1zd2FsLWRvbSc7XG5cblxuLy8gSGFuZGxlIGJ1dHRvbiBldmVudHMgYW5kIGtleWJvYXJkIGV2ZW50c1xuaW1wb3J0IHsgaGFuZGxlQnV0dG9uLCBoYW5kbGVDb25maXJtLCBoYW5kbGVDYW5jZWwgfSBmcm9tICcuL21vZHVsZXMvaGFuZGxlLWNsaWNrJztcbmltcG9ydCBoYW5kbGVLZXlEb3duIGZyb20gJy4vbW9kdWxlcy9oYW5kbGUta2V5JztcblxuXG4vLyBEZWZhdWx0IHZhbHVlc1xuaW1wb3J0IGRlZmF1bHRQYXJhbXMgZnJvbSAnLi9tb2R1bGVzL2RlZmF1bHQtcGFyYW1zJztcbmltcG9ydCBzZXRQYXJhbWV0ZXJzIGZyb20gJy4vbW9kdWxlcy9zZXQtcGFyYW1zJztcblxuLypcbiAqIFJlbWVtYmVyIHN0YXRlIGluIGNhc2VzIHdoZXJlIG9wZW5pbmcgYW5kIGhhbmRsaW5nIGEgbW9kYWwgd2lsbCBmaWRkbGUgd2l0aCBpdC5cbiAqIChXZSBhbHNvIHVzZSB3aW5kb3cucHJldmlvdXNBY3RpdmVFbGVtZW50IGFzIGEgZ2xvYmFsIHZhcmlhYmxlKVxuICovXG52YXIgcHJldmlvdXNXaW5kb3dLZXlEb3duO1xudmFyIGxhc3RGb2N1c2VkQnV0dG9uO1xuXG5cbi8qXG4gKiBHbG9iYWwgc3dlZXRBbGVydCBmdW5jdGlvblxuICogKHRoaXMgaXMgd2hhdCB0aGUgdXNlciBjYWxscylcbiAqL1xudmFyIHN3ZWV0QWxlcnQsIHN3YWw7XG5cbmV4cG9ydCBkZWZhdWx0IHN3ZWV0QWxlcnQgPSBzd2FsID0gZnVuY3Rpb24oKSB7XG4gIHZhciBjdXN0b21pemF0aW9ucyA9IGFyZ3VtZW50c1swXTtcblxuICBhZGRDbGFzcyhkb2N1bWVudC5ib2R5LCAnc3RvcC1zY3JvbGxpbmcnKTtcbiAgcmVzZXRJbnB1dCgpO1xuXG4gIC8qXG4gICAqIFVzZSBhcmd1bWVudCBpZiBkZWZpbmVkIG9yIGRlZmF1bHQgdmFsdWUgZnJvbSBwYXJhbXMgb2JqZWN0IG90aGVyd2lzZS5cbiAgICogU3VwcG9ydHMgdGhlIGNhc2Ugd2hlcmUgYSBkZWZhdWx0IHZhbHVlIGlzIGJvb2xlYW4gdHJ1ZSBhbmQgc2hvdWxkIGJlXG4gICAqIG92ZXJyaWRkZW4gYnkgYSBjb3JyZXNwb25kaW5nIGV4cGxpY2l0IGFyZ3VtZW50IHdoaWNoIGlzIGJvb2xlYW4gZmFsc2UuXG4gICAqL1xuICBmdW5jdGlvbiBhcmd1bWVudE9yRGVmYXVsdChrZXkpIHtcbiAgICB2YXIgYXJncyA9IGN1c3RvbWl6YXRpb25zO1xuICAgIHJldHVybiAoYXJnc1trZXldID09PSB1bmRlZmluZWQpID8gIGRlZmF1bHRQYXJhbXNba2V5XSA6IGFyZ3Nba2V5XTtcbiAgfVxuXG4gIGlmIChjdXN0b21pemF0aW9ucyA9PT0gdW5kZWZpbmVkKSB7XG4gICAgbG9nU3RyKCdTd2VldEFsZXJ0IGV4cGVjdHMgYXQgbGVhc3QgMSBhdHRyaWJ1dGUhJyk7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgdmFyIHBhcmFtcyA9IGV4dGVuZCh7fSwgZGVmYXVsdFBhcmFtcyk7XG5cbiAgc3dpdGNoICh0eXBlb2YgY3VzdG9taXphdGlvbnMpIHtcblxuICAgIC8vIEV4OiBzd2FsKFwiSGVsbG9cIiwgXCJKdXN0IHRlc3RpbmdcIiwgXCJpbmZvXCIpO1xuICAgIGNhc2UgJ3N0cmluZyc6XG4gICAgICBwYXJhbXMudGl0bGUgPSBjdXN0b21pemF0aW9ucztcbiAgICAgIHBhcmFtcy50ZXh0ICA9IGFyZ3VtZW50c1sxXSB8fCAnJztcbiAgICAgIHBhcmFtcy50eXBlICA9IGFyZ3VtZW50c1syXSB8fCAnJztcbiAgICAgIGJyZWFrO1xuXG4gICAgLy8gRXg6IHN3YWwoeyB0aXRsZTpcIkhlbGxvXCIsIHRleHQ6IFwiSnVzdCB0ZXN0aW5nXCIsIHR5cGU6IFwiaW5mb1wiIH0pO1xuICAgIGNhc2UgJ29iamVjdCc6XG4gICAgICBpZiAoY3VzdG9taXphdGlvbnMudGl0bGUgPT09IHVuZGVmaW5lZCkge1xuICAgICAgICBsb2dTdHIoJ01pc3NpbmcgXCJ0aXRsZVwiIGFyZ3VtZW50IScpO1xuICAgICAgICByZXR1cm4gZmFsc2U7XG4gICAgICB9XG5cbiAgICAgIHBhcmFtcy50aXRsZSA9IGN1c3RvbWl6YXRpb25zLnRpdGxlO1xuXG4gICAgICBmb3IgKGxldCBjdXN0b21OYW1lIGluIGRlZmF1bHRQYXJhbXMpIHtcbiAgICAgICAgcGFyYW1zW2N1c3RvbU5hbWVdID0gYXJndW1lbnRPckRlZmF1bHQoY3VzdG9tTmFtZSk7XG4gICAgICB9XG5cbiAgICAgIC8vIFNob3cgXCJDb25maXJtXCIgaW5zdGVhZCBvZiBcIk9LXCIgaWYgY2FuY2VsIGJ1dHRvbiBpcyB2aXNpYmxlXG4gICAgICBwYXJhbXMuY29uZmlybUJ1dHRvblRleHQgPSBwYXJhbXMuc2hvd0NhbmNlbEJ1dHRvbiA/ICdDb25maXJtJyA6IGRlZmF1bHRQYXJhbXMuY29uZmlybUJ1dHRvblRleHQ7XG4gICAgICBwYXJhbXMuY29uZmlybUJ1dHRvblRleHQgPSBhcmd1bWVudE9yRGVmYXVsdCgnY29uZmlybUJ1dHRvblRleHQnKTtcblxuICAgICAgLy8gQ2FsbGJhY2sgZnVuY3Rpb24gd2hlbiBjbGlja2luZyBvbiBcIk9LXCIvXCJDYW5jZWxcIlxuICAgICAgcGFyYW1zLmRvbmVGdW5jdGlvbiA9IGFyZ3VtZW50c1sxXSB8fCBudWxsO1xuXG4gICAgICBicmVhaztcblxuICAgIGRlZmF1bHQ6XG4gICAgICBsb2dTdHIoJ1VuZXhwZWN0ZWQgdHlwZSBvZiBhcmd1bWVudCEgRXhwZWN0ZWQgXCJzdHJpbmdcIiBvciBcIm9iamVjdFwiLCBnb3QgJyArIHR5cGVvZiBjdXN0b21pemF0aW9ucyk7XG4gICAgICByZXR1cm4gZmFsc2U7XG5cbiAgfVxuXG4gIHNldFBhcmFtZXRlcnMocGFyYW1zKTtcbiAgZml4VmVydGljYWxQb3NpdGlvbigpO1xuICBvcGVuTW9kYWwoYXJndW1lbnRzWzFdKTtcblxuICAvLyBNb2RhbCBpbnRlcmFjdGlvbnNcbiAgdmFyIG1vZGFsID0gZ2V0TW9kYWwoKTtcblxuXG4gIC8qXG4gICAqIE1ha2Ugc3VyZSBhbGwgbW9kYWwgYnV0dG9ucyByZXNwb25kIHRvIGFsbCBldmVudHNcbiAgICovXG4gIHZhciAkYnV0dG9ucyA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3JBbGwoJ2J1dHRvbicpO1xuICB2YXIgYnV0dG9uRXZlbnRzID0gWydvbmNsaWNrJywgJ29ubW91c2VvdmVyJywgJ29ubW91c2VvdXQnLCAnb25tb3VzZWRvd24nLCAnb25tb3VzZXVwJywgJ29uZm9jdXMnXTtcbiAgdmFyIG9uQnV0dG9uRXZlbnQgPSAoZSkgPT4gaGFuZGxlQnV0dG9uKGUsIHBhcmFtcywgbW9kYWwpO1xuXG4gIGZvciAobGV0IGJ0bkluZGV4ID0gMDsgYnRuSW5kZXggPCAkYnV0dG9ucy5sZW5ndGg7IGJ0bkluZGV4KyspIHtcbiAgICBmb3IgKGxldCBldnRJbmRleCA9IDA7IGV2dEluZGV4IDwgYnV0dG9uRXZlbnRzLmxlbmd0aDsgZXZ0SW5kZXgrKykge1xuICAgICAgbGV0IGJ0bkV2dCA9IGJ1dHRvbkV2ZW50c1tldnRJbmRleF07XG4gICAgICAkYnV0dG9uc1tidG5JbmRleF1bYnRuRXZ0XSA9IG9uQnV0dG9uRXZlbnQ7XG4gICAgfVxuICB9XG5cbiAgLy8gQ2xpY2tpbmcgb3V0c2lkZSB0aGUgbW9kYWwgZGlzbWlzc2VzIGl0IChpZiBhbGxvd2VkIGJ5IHVzZXIpXG4gIGdldE92ZXJsYXkoKS5vbmNsaWNrID0gb25CdXR0b25FdmVudDtcblxuICBwcmV2aW91c1dpbmRvd0tleURvd24gPSB3aW5kb3cub25rZXlkb3duO1xuXG4gIHZhciBvbktleUV2ZW50ID0gKGUpID0+IGhhbmRsZUtleURvd24oZSwgcGFyYW1zLCBtb2RhbCk7XG4gIHdpbmRvdy5vbmtleWRvd24gPSBvbktleUV2ZW50O1xuXG4gIHdpbmRvdy5vbmZvY3VzID0gZnVuY3Rpb24gKCkge1xuICAgIC8vIFdoZW4gdGhlIHVzZXIgaGFzIGZvY3VzZWQgYXdheSBhbmQgZm9jdXNlZCBiYWNrIGZyb20gdGhlIHdob2xlIHdpbmRvdy5cbiAgICBzZXRUaW1lb3V0KGZ1bmN0aW9uICgpIHtcbiAgICAgIC8vIFB1dCBpbiBhIHRpbWVvdXQgdG8ganVtcCBvdXQgb2YgdGhlIGV2ZW50IHNlcXVlbmNlLlxuICAgICAgLy8gQ2FsbGluZyBmb2N1cygpIGluIHRoZSBldmVudCBzZXF1ZW5jZSBjb25mdXNlcyB0aGluZ3MuXG4gICAgICBpZiAobGFzdEZvY3VzZWRCdXR0b24gIT09IHVuZGVmaW5lZCkge1xuICAgICAgICBsYXN0Rm9jdXNlZEJ1dHRvbi5mb2N1cygpO1xuICAgICAgICBsYXN0Rm9jdXNlZEJ1dHRvbiA9IHVuZGVmaW5lZDtcbiAgICAgIH1cbiAgICB9LCAwKTtcbiAgfTtcbiAgXG4gIC8vIFNob3cgYWxlcnQgd2l0aCBlbmFibGVkIGJ1dHRvbnMgYWx3YXlzXG4gIHN3YWwuZW5hYmxlQnV0dG9ucygpO1xufTtcblxuXG5cbi8qXG4gKiBTZXQgZGVmYXVsdCBwYXJhbXMgZm9yIGVhY2ggcG9wdXBcbiAqIEBwYXJhbSB7T2JqZWN0fSB1c2VyUGFyYW1zXG4gKi9cbnN3ZWV0QWxlcnQuc2V0RGVmYXVsdHMgPSBzd2FsLnNldERlZmF1bHRzID0gZnVuY3Rpb24odXNlclBhcmFtcykge1xuICBpZiAoIXVzZXJQYXJhbXMpIHtcbiAgICB0aHJvdyBuZXcgRXJyb3IoJ3VzZXJQYXJhbXMgaXMgcmVxdWlyZWQnKTtcbiAgfVxuICBpZiAodHlwZW9mIHVzZXJQYXJhbXMgIT09ICdvYmplY3QnKSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCd1c2VyUGFyYW1zIGhhcyB0byBiZSBhIG9iamVjdCcpO1xuICB9XG5cbiAgZXh0ZW5kKGRlZmF1bHRQYXJhbXMsIHVzZXJQYXJhbXMpO1xufTtcblxuXG4vKlxuICogQW5pbWF0aW9uIHdoZW4gY2xvc2luZyBtb2RhbFxuICovXG5zd2VldEFsZXJ0LmNsb3NlID0gc3dhbC5jbG9zZSA9IGZ1bmN0aW9uKCkge1xuICB2YXIgbW9kYWwgPSBnZXRNb2RhbCgpO1xuXG4gIGZhZGVPdXQoZ2V0T3ZlcmxheSgpLCA1KTtcbiAgZmFkZU91dChtb2RhbCwgNSk7XG4gIHJlbW92ZUNsYXNzKG1vZGFsLCAnc2hvd1N3ZWV0QWxlcnQnKTtcbiAgYWRkQ2xhc3MobW9kYWwsICdoaWRlU3dlZXRBbGVydCcpO1xuICByZW1vdmVDbGFzcyhtb2RhbCwgJ3Zpc2libGUnKTtcblxuICAvKlxuICAgKiBSZXNldCBpY29uIGFuaW1hdGlvbnNcbiAgICovXG4gIHZhciAkc3VjY2Vzc0ljb24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtaWNvbi5zYS1zdWNjZXNzJyk7XG4gIHJlbW92ZUNsYXNzKCRzdWNjZXNzSWNvbiwgJ2FuaW1hdGUnKTtcbiAgcmVtb3ZlQ2xhc3MoJHN1Y2Nlc3NJY29uLnF1ZXJ5U2VsZWN0b3IoJy5zYS10aXAnKSwgJ2FuaW1hdGVTdWNjZXNzVGlwJyk7XG4gIHJlbW92ZUNsYXNzKCRzdWNjZXNzSWNvbi5xdWVyeVNlbGVjdG9yKCcuc2EtbG9uZycpLCAnYW5pbWF0ZVN1Y2Nlc3NMb25nJyk7XG5cbiAgdmFyICRlcnJvckljb24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtaWNvbi5zYS1lcnJvcicpO1xuICByZW1vdmVDbGFzcygkZXJyb3JJY29uLCAnYW5pbWF0ZUVycm9ySWNvbicpO1xuICByZW1vdmVDbGFzcygkZXJyb3JJY29uLnF1ZXJ5U2VsZWN0b3IoJy5zYS14LW1hcmsnKSwgJ2FuaW1hdGVYTWFyaycpO1xuXG4gIHZhciAkd2FybmluZ0ljb24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtaWNvbi5zYS13YXJuaW5nJyk7XG4gIHJlbW92ZUNsYXNzKCR3YXJuaW5nSWNvbiwgJ3B1bHNlV2FybmluZycpO1xuICByZW1vdmVDbGFzcygkd2FybmluZ0ljb24ucXVlcnlTZWxlY3RvcignLnNhLWJvZHknKSwgJ3B1bHNlV2FybmluZ0lucycpO1xuICByZW1vdmVDbGFzcygkd2FybmluZ0ljb24ucXVlcnlTZWxlY3RvcignLnNhLWRvdCcpLCAncHVsc2VXYXJuaW5nSW5zJyk7XG5cbiAgLy8gUmVzZXQgY3VzdG9tIGNsYXNzIChkZWxheSBzbyB0aGF0IFVJIGNoYW5nZXMgYXJlbid0IHZpc2libGUpXG4gIHNldFRpbWVvdXQoZnVuY3Rpb24oKSB7XG4gICAgdmFyIGN1c3RvbUNsYXNzID0gbW9kYWwuZ2V0QXR0cmlidXRlKCdkYXRhLWN1c3RvbS1jbGFzcycpO1xuICAgIHJlbW92ZUNsYXNzKG1vZGFsLCBjdXN0b21DbGFzcyk7XG4gIH0sIDMwMCk7XG5cbiAgLy8gTWFrZSBwYWdlIHNjcm9sbGFibGUgYWdhaW5cbiAgcmVtb3ZlQ2xhc3MoZG9jdW1lbnQuYm9keSwgJ3N0b3Atc2Nyb2xsaW5nJyk7XG5cbiAgLy8gUmVzZXQgdGhlIHBhZ2UgdG8gaXRzIHByZXZpb3VzIHN0YXRlXG4gIHdpbmRvdy5vbmtleWRvd24gPSBwcmV2aW91c1dpbmRvd0tleURvd247XG4gIGlmICh3aW5kb3cucHJldmlvdXNBY3RpdmVFbGVtZW50KSB7XG4gICAgd2luZG93LnByZXZpb3VzQWN0aXZlRWxlbWVudC5mb2N1cygpO1xuICB9XG4gIGxhc3RGb2N1c2VkQnV0dG9uID0gdW5kZWZpbmVkO1xuICBjbGVhclRpbWVvdXQobW9kYWwudGltZW91dCk7XG5cbiAgcmV0dXJuIHRydWU7XG59O1xuXG5cbi8qXG4gKiBWYWxpZGF0aW9uIG9mIHRoZSBpbnB1dCBmaWVsZCBpcyBkb25lIGJ5IHVzZXJcbiAqIElmIHNvbWV0aGluZyBpcyB3cm9uZyA9PiBjYWxsIHNob3dJbnB1dEVycm9yIHdpdGggZXJyb3JNZXNzYWdlXG4gKi9cbnN3ZWV0QWxlcnQuc2hvd0lucHV0RXJyb3IgPSBzd2FsLnNob3dJbnB1dEVycm9yID0gZnVuY3Rpb24oZXJyb3JNZXNzYWdlKSB7XG4gIHZhciBtb2RhbCA9IGdldE1vZGFsKCk7XG5cbiAgdmFyICRlcnJvckljb24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtaW5wdXQtZXJyb3InKTtcbiAgYWRkQ2xhc3MoJGVycm9ySWNvbiwgJ3Nob3cnKTtcblxuICB2YXIgJGVycm9yQ29udGFpbmVyID0gbW9kYWwucXVlcnlTZWxlY3RvcignLnNhLWVycm9yLWNvbnRhaW5lcicpO1xuICBhZGRDbGFzcygkZXJyb3JDb250YWluZXIsICdzaG93Jyk7XG5cbiAgJGVycm9yQ29udGFpbmVyLnF1ZXJ5U2VsZWN0b3IoJ3AnKS5pbm5lckhUTUwgPSBlcnJvck1lc3NhZ2U7XG5cbiAgc2V0VGltZW91dChmdW5jdGlvbigpIHtcbiAgICBzd2VldEFsZXJ0LmVuYWJsZUJ1dHRvbnMoKTtcbiAgfSwgMSk7XG5cbiAgbW9kYWwucXVlcnlTZWxlY3RvcignaW5wdXQnKS5mb2N1cygpO1xufTtcblxuXG4vKlxuICogUmVzZXQgaW5wdXQgZXJyb3IgRE9NIGVsZW1lbnRzXG4gKi9cbnN3ZWV0QWxlcnQucmVzZXRJbnB1dEVycm9yID0gc3dhbC5yZXNldElucHV0RXJyb3IgPSBmdW5jdGlvbihldmVudCkge1xuICAvLyBJZiBwcmVzcyBlbnRlciA9PiBpZ25vcmVcbiAgaWYgKGV2ZW50ICYmIGV2ZW50LmtleUNvZGUgPT09IDEzKSB7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgdmFyICRtb2RhbCA9IGdldE1vZGFsKCk7XG5cbiAgdmFyICRlcnJvckljb24gPSAkbW9kYWwucXVlcnlTZWxlY3RvcignLnNhLWlucHV0LWVycm9yJyk7XG4gIHJlbW92ZUNsYXNzKCRlcnJvckljb24sICdzaG93Jyk7XG5cbiAgdmFyICRlcnJvckNvbnRhaW5lciA9ICRtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtZXJyb3ItY29udGFpbmVyJyk7XG4gIHJlbW92ZUNsYXNzKCRlcnJvckNvbnRhaW5lciwgJ3Nob3cnKTtcbn07XG5cbi8qXG4gKiBEaXNhYmxlIGNvbmZpcm0gYW5kIGNhbmNlbCBidXR0b25zXG4gKi9cbnN3ZWV0QWxlcnQuZGlzYWJsZUJ1dHRvbnMgPSBzd2FsLmRpc2FibGVCdXR0b25zID0gZnVuY3Rpb24oZXZlbnQpIHtcbiAgdmFyIG1vZGFsID0gZ2V0TW9kYWwoKTtcbiAgdmFyICRjb25maXJtQnV0dG9uID0gbW9kYWwucXVlcnlTZWxlY3RvcignYnV0dG9uLmNvbmZpcm0nKTtcbiAgdmFyICRjYW5jZWxCdXR0b24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCdidXR0b24uY2FuY2VsJyk7XG4gICRjb25maXJtQnV0dG9uLmRpc2FibGVkID0gdHJ1ZTtcbiAgJGNhbmNlbEJ1dHRvbi5kaXNhYmxlZCA9IHRydWU7XG59O1xuXG4vKlxuICogRW5hYmxlIGNvbmZpcm0gYW5kIGNhbmNlbCBidXR0b25zXG4gKi9cbnN3ZWV0QWxlcnQuZW5hYmxlQnV0dG9ucyA9IHN3YWwuZW5hYmxlQnV0dG9ucyA9IGZ1bmN0aW9uKGV2ZW50KSB7XG4gIHZhciBtb2RhbCA9IGdldE1vZGFsKCk7XG4gIHZhciAkY29uZmlybUJ1dHRvbiA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2J1dHRvbi5jb25maXJtJyk7XG4gIHZhciAkY2FuY2VsQnV0dG9uID0gbW9kYWwucXVlcnlTZWxlY3RvcignYnV0dG9uLmNhbmNlbCcpO1xuICAkY29uZmlybUJ1dHRvbi5kaXNhYmxlZCA9IGZhbHNlO1xuICAkY2FuY2VsQnV0dG9uLmRpc2FibGVkID0gZmFsc2U7XG59O1xuXG5pZiAodHlwZW9mIHdpbmRvdyAhPT0gJ3VuZGVmaW5lZCcpIHtcbiAgLy8gVGhlICdoYW5kbGUtY2xpY2snIG1vZHVsZSByZXF1aXJlc1xuICAvLyB0aGF0ICdzd2VldEFsZXJ0JyB3YXMgc2V0IGFzIGdsb2JhbC5cbiAgd2luZG93LnN3ZWV0QWxlcnQgPSB3aW5kb3cuc3dhbCA9IHN3ZWV0QWxlcnQ7XG59IGVsc2Uge1xuICBsb2dTdHIoJ1N3ZWV0QWxlcnQgaXMgYSBmcm9udGVuZCBtb2R1bGUhJyk7XG59XG4iLCJ2YXIgZGVmYXVsdFBhcmFtcyA9IHtcbiAgdGl0bGU6ICcnLFxuICB0ZXh0OiAnJyxcbiAgdHlwZTogbnVsbCxcbiAgYWxsb3dPdXRzaWRlQ2xpY2s6IGZhbHNlLFxuICBzaG93Q29uZmlybUJ1dHRvbjogdHJ1ZSxcbiAgc2hvd0NhbmNlbEJ1dHRvbjogZmFsc2UsXG4gIGNsb3NlT25Db25maXJtOiB0cnVlLFxuICBjbG9zZU9uQ2FuY2VsOiB0cnVlLFxuICBjb25maXJtQnV0dG9uVGV4dDogJ09LJyxcbiAgY29uZmlybUJ1dHRvbkNvbG9yOiAnIzhDRDRGNScsXG4gIGNhbmNlbEJ1dHRvblRleHQ6ICdDYW5jZWwnLFxuICBpbWFnZVVybDogbnVsbCxcbiAgaW1hZ2VTaXplOiBudWxsLFxuICB0aW1lcjogbnVsbCxcbiAgY3VzdG9tQ2xhc3M6ICcnLFxuICBodG1sOiBmYWxzZSxcbiAgYW5pbWF0aW9uOiB0cnVlLFxuICBhbGxvd0VzY2FwZUtleTogdHJ1ZSxcbiAgaW5wdXRUeXBlOiAndGV4dCcsXG4gIGlucHV0UGxhY2Vob2xkZXI6ICcnLFxuICBpbnB1dFZhbHVlOiAnJyxcbiAgc2hvd0xvYWRlck9uQ29uZmlybTogZmFsc2Vcbn07XG5cbmV4cG9ydCBkZWZhdWx0IGRlZmF1bHRQYXJhbXM7XG4iLCJpbXBvcnQgeyBjb2xvckx1bWluYW5jZSB9IGZyb20gJy4vdXRpbHMnO1xuaW1wb3J0IHsgZ2V0TW9kYWwgfSBmcm9tICcuL2hhbmRsZS1zd2FsLWRvbSc7XG5pbXBvcnQgeyBoYXNDbGFzcywgaXNEZXNjZW5kYW50IH0gZnJvbSAnLi9oYW5kbGUtZG9tJztcblxuXG4vKlxuICogVXNlciBjbGlja2VkIG9uIFwiQ29uZmlybVwiL1wiT0tcIiBvciBcIkNhbmNlbFwiXG4gKi9cbnZhciBoYW5kbGVCdXR0b24gPSBmdW5jdGlvbihldmVudCwgcGFyYW1zLCBtb2RhbCkge1xuICB2YXIgZSA9IGV2ZW50IHx8IHdpbmRvdy5ldmVudDtcbiAgdmFyIHRhcmdldCA9IGUudGFyZ2V0IHx8IGUuc3JjRWxlbWVudDtcblxuICB2YXIgdGFyZ2V0ZWRDb25maXJtID0gdGFyZ2V0LmNsYXNzTmFtZS5pbmRleE9mKCdjb25maXJtJykgIT09IC0xO1xuICB2YXIgdGFyZ2V0ZWRPdmVybGF5ID0gdGFyZ2V0LmNsYXNzTmFtZS5pbmRleE9mKCdzd2VldC1vdmVybGF5JykgIT09IC0xO1xuICB2YXIgbW9kYWxJc1Zpc2libGUgID0gaGFzQ2xhc3MobW9kYWwsICd2aXNpYmxlJyk7XG4gIHZhciBkb25lRnVuY3Rpb25FeGlzdHMgPSAocGFyYW1zLmRvbmVGdW5jdGlvbiAmJiBtb2RhbC5nZXRBdHRyaWJ1dGUoJ2RhdGEtaGFzLWRvbmUtZnVuY3Rpb24nKSA9PT0gJ3RydWUnKTtcblxuICAvLyBTaW5jZSB0aGUgdXNlciBjYW4gY2hhbmdlIHRoZSBiYWNrZ3JvdW5kLWNvbG9yIG9mIHRoZSBjb25maXJtIGJ1dHRvbiBwcm9ncmFtbWF0aWNhbGx5LFxuICAvLyB3ZSBtdXN0IGNhbGN1bGF0ZSB3aGF0IHRoZSBjb2xvciBzaG91bGQgYmUgb24gaG92ZXIvYWN0aXZlXG4gIHZhciBub3JtYWxDb2xvciwgaG92ZXJDb2xvciwgYWN0aXZlQ29sb3I7XG4gIGlmICh0YXJnZXRlZENvbmZpcm0gJiYgcGFyYW1zLmNvbmZpcm1CdXR0b25Db2xvcikge1xuICAgIG5vcm1hbENvbG9yICA9IHBhcmFtcy5jb25maXJtQnV0dG9uQ29sb3I7XG4gICAgaG92ZXJDb2xvciAgID0gY29sb3JMdW1pbmFuY2Uobm9ybWFsQ29sb3IsIC0wLjA0KTtcbiAgICBhY3RpdmVDb2xvciAgPSBjb2xvckx1bWluYW5jZShub3JtYWxDb2xvciwgLTAuMTQpO1xuICB9XG5cbiAgZnVuY3Rpb24gc2hvdWxkU2V0Q29uZmlybUJ1dHRvbkNvbG9yKGNvbG9yKSB7XG4gICAgaWYgKHRhcmdldGVkQ29uZmlybSAmJiBwYXJhbXMuY29uZmlybUJ1dHRvbkNvbG9yKSB7XG4gICAgICB0YXJnZXQuc3R5bGUuYmFja2dyb3VuZENvbG9yID0gY29sb3I7XG4gICAgfVxuICB9XG5cbiAgc3dpdGNoIChlLnR5cGUpIHtcbiAgICBjYXNlICdtb3VzZW92ZXInOlxuICAgICAgc2hvdWxkU2V0Q29uZmlybUJ1dHRvbkNvbG9yKGhvdmVyQ29sb3IpO1xuICAgICAgYnJlYWs7XG5cbiAgICBjYXNlICdtb3VzZW91dCc6XG4gICAgICBzaG91bGRTZXRDb25maXJtQnV0dG9uQ29sb3Iobm9ybWFsQ29sb3IpO1xuICAgICAgYnJlYWs7XG5cbiAgICBjYXNlICdtb3VzZWRvd24nOlxuICAgICAgc2hvdWxkU2V0Q29uZmlybUJ1dHRvbkNvbG9yKGFjdGl2ZUNvbG9yKTtcbiAgICAgIGJyZWFrO1xuXG4gICAgY2FzZSAnbW91c2V1cCc6XG4gICAgICBzaG91bGRTZXRDb25maXJtQnV0dG9uQ29sb3IoaG92ZXJDb2xvcik7XG4gICAgICBicmVhaztcblxuICAgIGNhc2UgJ2ZvY3VzJzpcbiAgICAgIGxldCAkY29uZmlybUJ1dHRvbiA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2J1dHRvbi5jb25maXJtJyk7XG4gICAgICBsZXQgJGNhbmNlbEJ1dHRvbiAgPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCdidXR0b24uY2FuY2VsJyk7XG5cbiAgICAgIGlmICh0YXJnZXRlZENvbmZpcm0pIHtcbiAgICAgICAgJGNhbmNlbEJ1dHRvbi5zdHlsZS5ib3hTaGFkb3cgPSAnbm9uZSc7XG4gICAgICB9IGVsc2Uge1xuICAgICAgICAkY29uZmlybUJ1dHRvbi5zdHlsZS5ib3hTaGFkb3cgPSAnbm9uZSc7XG4gICAgICB9XG4gICAgICBicmVhaztcblxuICAgIGNhc2UgJ2NsaWNrJzpcbiAgICAgIGxldCBjbGlja2VkT25Nb2RhbCA9IChtb2RhbCA9PT0gdGFyZ2V0KTtcbiAgICAgIGxldCBjbGlja2VkT25Nb2RhbENoaWxkID0gaXNEZXNjZW5kYW50KG1vZGFsLCB0YXJnZXQpO1xuXG4gICAgICAvLyBJZ25vcmUgY2xpY2sgb3V0c2lkZSBpZiBhbGxvd091dHNpZGVDbGljayBpcyBmYWxzZVxuICAgICAgaWYgKCFjbGlja2VkT25Nb2RhbCAmJiAhY2xpY2tlZE9uTW9kYWxDaGlsZCAmJiBtb2RhbElzVmlzaWJsZSAmJiAhcGFyYW1zLmFsbG93T3V0c2lkZUNsaWNrKSB7XG4gICAgICAgIGJyZWFrO1xuICAgICAgfVxuXG4gICAgICBpZiAodGFyZ2V0ZWRDb25maXJtICYmIGRvbmVGdW5jdGlvbkV4aXN0cyAmJiBtb2RhbElzVmlzaWJsZSkge1xuICAgICAgICBoYW5kbGVDb25maXJtKG1vZGFsLCBwYXJhbXMpO1xuICAgICAgfSBlbHNlIGlmIChkb25lRnVuY3Rpb25FeGlzdHMgJiYgbW9kYWxJc1Zpc2libGUgfHwgdGFyZ2V0ZWRPdmVybGF5KSB7XG4gICAgICAgIGhhbmRsZUNhbmNlbChtb2RhbCwgcGFyYW1zKTtcbiAgICAgIH0gZWxzZSBpZiAoaXNEZXNjZW5kYW50KG1vZGFsLCB0YXJnZXQpICYmIHRhcmdldC50YWdOYW1lID09PSAnQlVUVE9OJykge1xuICAgICAgICBzd2VldEFsZXJ0LmNsb3NlKCk7XG4gICAgICB9XG4gICAgICBicmVhaztcbiAgfVxufTtcblxuLypcbiAqICBVc2VyIGNsaWNrZWQgb24gXCJDb25maXJtXCIvXCJPS1wiXG4gKi9cbnZhciBoYW5kbGVDb25maXJtID0gZnVuY3Rpb24obW9kYWwsIHBhcmFtcykge1xuICB2YXIgY2FsbGJhY2tWYWx1ZSA9IHRydWU7XG5cbiAgaWYgKGhhc0NsYXNzKG1vZGFsLCAnc2hvdy1pbnB1dCcpKSB7XG4gICAgY2FsbGJhY2tWYWx1ZSA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2lucHV0JykudmFsdWU7XG5cbiAgICBpZiAoIWNhbGxiYWNrVmFsdWUpIHtcbiAgICAgIGNhbGxiYWNrVmFsdWUgPSAnJztcbiAgICB9XG4gIH1cblxuICBwYXJhbXMuZG9uZUZ1bmN0aW9uKGNhbGxiYWNrVmFsdWUpO1xuXG4gIGlmIChwYXJhbXMuY2xvc2VPbkNvbmZpcm0pIHtcbiAgICBzd2VldEFsZXJ0LmNsb3NlKCk7XG4gIH1cbiAgLy8gRGlzYWJsZSBjYW5jZWwgYW5kIGNvbmZpcm0gYnV0dG9uIGlmIHRoZSBwYXJhbWV0ZXIgaXMgdHJ1ZVxuICBpZiAocGFyYW1zLnNob3dMb2FkZXJPbkNvbmZpcm0pIHtcbiAgICBzd2VldEFsZXJ0LmRpc2FibGVCdXR0b25zKCk7XG4gIH1cbn07XG5cbi8qXG4gKiAgVXNlciBjbGlja2VkIG9uIFwiQ2FuY2VsXCJcbiAqL1xudmFyIGhhbmRsZUNhbmNlbCA9IGZ1bmN0aW9uKG1vZGFsLCBwYXJhbXMpIHtcbiAgLy8gQ2hlY2sgaWYgY2FsbGJhY2sgZnVuY3Rpb24gZXhwZWN0cyBhIHBhcmFtZXRlciAodG8gdHJhY2sgY2FuY2VsIGFjdGlvbnMpXG4gIHZhciBmdW5jdGlvbkFzU3RyID0gU3RyaW5nKHBhcmFtcy5kb25lRnVuY3Rpb24pLnJlcGxhY2UoL1xccy9nLCAnJyk7XG4gIHZhciBmdW5jdGlvbkhhbmRsZXNDYW5jZWwgPSBmdW5jdGlvbkFzU3RyLnN1YnN0cmluZygwLCA5KSA9PT0gJ2Z1bmN0aW9uKCcgJiYgZnVuY3Rpb25Bc1N0ci5zdWJzdHJpbmcoOSwgMTApICE9PSAnKSc7XG5cbiAgaWYgKGZ1bmN0aW9uSGFuZGxlc0NhbmNlbCkge1xuICAgIHBhcmFtcy5kb25lRnVuY3Rpb24oZmFsc2UpO1xuICB9XG5cbiAgaWYgKHBhcmFtcy5jbG9zZU9uQ2FuY2VsKSB7XG4gICAgc3dlZXRBbGVydC5jbG9zZSgpO1xuICB9XG59O1xuXG5cbmV4cG9ydCBkZWZhdWx0IHtcbiAgaGFuZGxlQnV0dG9uLFxuICBoYW5kbGVDb25maXJtLFxuICBoYW5kbGVDYW5jZWxcbn07XG4iLCJ2YXIgaGFzQ2xhc3MgPSBmdW5jdGlvbihlbGVtLCBjbGFzc05hbWUpIHtcbiAgcmV0dXJuIG5ldyBSZWdFeHAoJyAnICsgY2xhc3NOYW1lICsgJyAnKS50ZXN0KCcgJyArIGVsZW0uY2xhc3NOYW1lICsgJyAnKTtcbn07XG5cbnZhciBhZGRDbGFzcyA9IGZ1bmN0aW9uKGVsZW0sIGNsYXNzTmFtZSkge1xuICBpZiAoIWhhc0NsYXNzKGVsZW0sIGNsYXNzTmFtZSkpIHtcbiAgICBlbGVtLmNsYXNzTmFtZSArPSAnICcgKyBjbGFzc05hbWU7XG4gIH1cbn07XG5cbnZhciByZW1vdmVDbGFzcyA9IGZ1bmN0aW9uKGVsZW0sIGNsYXNzTmFtZSkge1xuICB2YXIgbmV3Q2xhc3MgPSAnICcgKyBlbGVtLmNsYXNzTmFtZS5yZXBsYWNlKC9bXFx0XFxyXFxuXS9nLCAnICcpICsgJyAnO1xuICBpZiAoaGFzQ2xhc3MoZWxlbSwgY2xhc3NOYW1lKSkge1xuICAgIHdoaWxlIChuZXdDbGFzcy5pbmRleE9mKCcgJyArIGNsYXNzTmFtZSArICcgJykgPj0gMCkge1xuICAgICAgbmV3Q2xhc3MgPSBuZXdDbGFzcy5yZXBsYWNlKCcgJyArIGNsYXNzTmFtZSArICcgJywgJyAnKTtcbiAgICB9XG4gICAgZWxlbS5jbGFzc05hbWUgPSBuZXdDbGFzcy5yZXBsYWNlKC9eXFxzK3xcXHMrJC9nLCAnJyk7XG4gIH1cbn07XG5cbnZhciBlc2NhcGVIdG1sID0gZnVuY3Rpb24oc3RyKSB7XG4gIHZhciBkaXYgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTtcbiAgZGl2LmFwcGVuZENoaWxkKGRvY3VtZW50LmNyZWF0ZVRleHROb2RlKHN0cikpO1xuICByZXR1cm4gZGl2LmlubmVySFRNTDtcbn07XG5cbnZhciBfc2hvdyA9IGZ1bmN0aW9uKGVsZW0pIHtcbiAgZWxlbS5zdHlsZS5vcGFjaXR5ID0gJyc7XG4gIGVsZW0uc3R5bGUuZGlzcGxheSA9ICdibG9jayc7XG59O1xuXG52YXIgc2hvdyA9IGZ1bmN0aW9uKGVsZW1zKSB7XG4gIGlmIChlbGVtcyAmJiAhZWxlbXMubGVuZ3RoKSB7XG4gICAgcmV0dXJuIF9zaG93KGVsZW1zKTtcbiAgfVxuICBmb3IgKHZhciBpID0gMDsgaSA8IGVsZW1zLmxlbmd0aDsgKytpKSB7XG4gICAgX3Nob3coZWxlbXNbaV0pO1xuICB9XG59O1xuXG52YXIgX2hpZGUgPSBmdW5jdGlvbihlbGVtKSB7XG4gIGVsZW0uc3R5bGUub3BhY2l0eSA9ICcnO1xuICBlbGVtLnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7XG59O1xuXG52YXIgaGlkZSA9IGZ1bmN0aW9uKGVsZW1zKSB7XG4gIGlmIChlbGVtcyAmJiAhZWxlbXMubGVuZ3RoKSB7XG4gICAgcmV0dXJuIF9oaWRlKGVsZW1zKTtcbiAgfVxuICBmb3IgKHZhciBpID0gMDsgaSA8IGVsZW1zLmxlbmd0aDsgKytpKSB7XG4gICAgX2hpZGUoZWxlbXNbaV0pO1xuICB9XG59O1xuXG52YXIgaXNEZXNjZW5kYW50ID0gZnVuY3Rpb24ocGFyZW50LCBjaGlsZCkge1xuICB2YXIgbm9kZSA9IGNoaWxkLnBhcmVudE5vZGU7XG4gIHdoaWxlIChub2RlICE9PSBudWxsKSB7XG4gICAgaWYgKG5vZGUgPT09IHBhcmVudCkge1xuICAgICAgcmV0dXJuIHRydWU7XG4gICAgfVxuICAgIG5vZGUgPSBub2RlLnBhcmVudE5vZGU7XG4gIH1cbiAgcmV0dXJuIGZhbHNlO1xufTtcblxudmFyIGdldFRvcE1hcmdpbiA9IGZ1bmN0aW9uKGVsZW0pIHtcbiAgZWxlbS5zdHlsZS5sZWZ0ID0gJy05OTk5cHgnO1xuICBlbGVtLnN0eWxlLmRpc3BsYXkgPSAnYmxvY2snO1xuXG4gIHZhciBoZWlnaHQgPSBlbGVtLmNsaWVudEhlaWdodCxcbiAgICAgIHBhZGRpbmc7XG4gIGlmICh0eXBlb2YgZ2V0Q29tcHV0ZWRTdHlsZSAhPT0gXCJ1bmRlZmluZWRcIikgeyAvLyBJRSA4XG4gICAgcGFkZGluZyA9IHBhcnNlSW50KGdldENvbXB1dGVkU3R5bGUoZWxlbSkuZ2V0UHJvcGVydHlWYWx1ZSgncGFkZGluZy10b3AnKSwgMTApO1xuICB9IGVsc2Uge1xuICAgIHBhZGRpbmcgPSBwYXJzZUludChlbGVtLmN1cnJlbnRTdHlsZS5wYWRkaW5nKTtcbiAgfVxuXG4gIGVsZW0uc3R5bGUubGVmdCA9ICcnO1xuICBlbGVtLnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7XG4gIHJldHVybiAoJy0nICsgcGFyc2VJbnQoKGhlaWdodCArIHBhZGRpbmcpIC8gMikgKyAncHgnKTtcbn07XG5cbnZhciBmYWRlSW4gPSBmdW5jdGlvbihlbGVtLCBpbnRlcnZhbCkge1xuICBpZiAoK2VsZW0uc3R5bGUub3BhY2l0eSA8IDEpIHtcbiAgICBpbnRlcnZhbCA9IGludGVydmFsIHx8IDE2O1xuICAgIGVsZW0uc3R5bGUub3BhY2l0eSA9IDA7XG4gICAgZWxlbS5zdHlsZS5kaXNwbGF5ID0gJ2Jsb2NrJztcbiAgICB2YXIgbGFzdCA9ICtuZXcgRGF0ZSgpO1xuICAgIHZhciB0aWNrID0gZnVuY3Rpb24oKSB7XG4gICAgICBlbGVtLnN0eWxlLm9wYWNpdHkgPSArZWxlbS5zdHlsZS5vcGFjaXR5ICsgKG5ldyBEYXRlKCkgLSBsYXN0KSAvIDEwMDtcbiAgICAgIGxhc3QgPSArbmV3IERhdGUoKTtcblxuICAgICAgaWYgKCtlbGVtLnN0eWxlLm9wYWNpdHkgPCAxKSB7XG4gICAgICAgIHNldFRpbWVvdXQodGljaywgaW50ZXJ2YWwpO1xuICAgICAgfVxuICAgIH07XG4gICAgdGljaygpO1xuICB9XG4gIGVsZW0uc3R5bGUuZGlzcGxheSA9ICdibG9jayc7IC8vZmFsbGJhY2sgSUU4XG59O1xuXG52YXIgZmFkZU91dCA9IGZ1bmN0aW9uKGVsZW0sIGludGVydmFsKSB7XG4gIGludGVydmFsID0gaW50ZXJ2YWwgfHwgMTY7XG4gIGVsZW0uc3R5bGUub3BhY2l0eSA9IDE7XG4gIHZhciBsYXN0ID0gK25ldyBEYXRlKCk7XG4gIHZhciB0aWNrID0gZnVuY3Rpb24oKSB7XG4gICAgZWxlbS5zdHlsZS5vcGFjaXR5ID0gK2VsZW0uc3R5bGUub3BhY2l0eSAtIChuZXcgRGF0ZSgpIC0gbGFzdCkgLyAxMDA7XG4gICAgbGFzdCA9ICtuZXcgRGF0ZSgpO1xuXG4gICAgaWYgKCtlbGVtLnN0eWxlLm9wYWNpdHkgPiAwKSB7XG4gICAgICBzZXRUaW1lb3V0KHRpY2ssIGludGVydmFsKTtcbiAgICB9IGVsc2Uge1xuICAgICAgZWxlbS5zdHlsZS5kaXNwbGF5ID0gJ25vbmUnO1xuICAgIH1cbiAgfTtcbiAgdGljaygpO1xufTtcblxudmFyIGZpcmVDbGljayA9IGZ1bmN0aW9uKG5vZGUpIHtcbiAgLy8gVGFrZW4gZnJvbSBodHRwOi8vd3d3Lm5vbm9idHJ1c2l2ZS5jb20vMjAxMS8xMS8yOS9wcm9ncmFtYXRpY2FsbHktZmlyZS1jcm9zc2Jyb3dzZXItY2xpY2stZXZlbnQtd2l0aC1qYXZhc2NyaXB0L1xuICAvLyBUaGVuIGZpeGVkIGZvciB0b2RheSdzIENocm9tZSBicm93c2VyLlxuICBpZiAodHlwZW9mIE1vdXNlRXZlbnQgPT09ICdmdW5jdGlvbicpIHtcbiAgICAvLyBVcC10by1kYXRlIGFwcHJvYWNoXG4gICAgdmFyIG1ldnQgPSBuZXcgTW91c2VFdmVudCgnY2xpY2snLCB7XG4gICAgICB2aWV3OiB3aW5kb3csXG4gICAgICBidWJibGVzOiBmYWxzZSxcbiAgICAgIGNhbmNlbGFibGU6IHRydWVcbiAgICB9KTtcbiAgICBub2RlLmRpc3BhdGNoRXZlbnQobWV2dCk7XG4gIH0gZWxzZSBpZiAoIGRvY3VtZW50LmNyZWF0ZUV2ZW50ICkge1xuICAgIC8vIEZhbGxiYWNrXG4gICAgdmFyIGV2dCA9IGRvY3VtZW50LmNyZWF0ZUV2ZW50KCdNb3VzZUV2ZW50cycpO1xuICAgIGV2dC5pbml0RXZlbnQoJ2NsaWNrJywgZmFsc2UsIGZhbHNlKTtcbiAgICBub2RlLmRpc3BhdGNoRXZlbnQoZXZ0KTtcbiAgfSBlbHNlIGlmIChkb2N1bWVudC5jcmVhdGVFdmVudE9iamVjdCkge1xuICAgIG5vZGUuZmlyZUV2ZW50KCdvbmNsaWNrJykgO1xuICB9IGVsc2UgaWYgKHR5cGVvZiBub2RlLm9uY2xpY2sgPT09ICdmdW5jdGlvbicgKSB7XG4gICAgbm9kZS5vbmNsaWNrKCk7XG4gIH1cbn07XG5cbnZhciBzdG9wRXZlbnRQcm9wYWdhdGlvbiA9IGZ1bmN0aW9uKGUpIHtcbiAgLy8gSW4gcGFydGljdWxhciwgbWFrZSBzdXJlIHRoZSBzcGFjZSBiYXIgZG9lc24ndCBzY3JvbGwgdGhlIG1haW4gd2luZG93LlxuICBpZiAodHlwZW9mIGUuc3RvcFByb3BhZ2F0aW9uID09PSAnZnVuY3Rpb24nKSB7XG4gICAgZS5zdG9wUHJvcGFnYXRpb24oKTtcbiAgICBlLnByZXZlbnREZWZhdWx0KCk7XG4gIH0gZWxzZSBpZiAod2luZG93LmV2ZW50ICYmIHdpbmRvdy5ldmVudC5oYXNPd25Qcm9wZXJ0eSgnY2FuY2VsQnViYmxlJykpIHtcbiAgICB3aW5kb3cuZXZlbnQuY2FuY2VsQnViYmxlID0gdHJ1ZTtcbiAgfVxufTtcblxuZXhwb3J0IHsgXG4gIGhhc0NsYXNzLCBhZGRDbGFzcywgcmVtb3ZlQ2xhc3MsIFxuICBlc2NhcGVIdG1sLCBcbiAgX3Nob3csIHNob3csIF9oaWRlLCBoaWRlLCBcbiAgaXNEZXNjZW5kYW50LCBcbiAgZ2V0VG9wTWFyZ2luLFxuICBmYWRlSW4sIGZhZGVPdXQsXG4gIGZpcmVDbGljayxcbiAgc3RvcEV2ZW50UHJvcGFnYXRpb25cbn07XG4iLCJpbXBvcnQgeyBzdG9wRXZlbnRQcm9wYWdhdGlvbiwgZmlyZUNsaWNrIH0gZnJvbSAnLi9oYW5kbGUtZG9tJztcbmltcG9ydCB7IHNldEZvY3VzU3R5bGUgfSBmcm9tICcuL2hhbmRsZS1zd2FsLWRvbSc7XG5cblxudmFyIGhhbmRsZUtleURvd24gPSBmdW5jdGlvbihldmVudCwgcGFyYW1zLCBtb2RhbCkge1xuICB2YXIgZSA9IGV2ZW50IHx8IHdpbmRvdy5ldmVudDtcbiAgdmFyIGtleUNvZGUgPSBlLmtleUNvZGUgfHwgZS53aGljaDtcblxuICB2YXIgJG9rQnV0dG9uICAgICA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2J1dHRvbi5jb25maXJtJyk7XG4gIHZhciAkY2FuY2VsQnV0dG9uID0gbW9kYWwucXVlcnlTZWxlY3RvcignYnV0dG9uLmNhbmNlbCcpO1xuICB2YXIgJG1vZGFsQnV0dG9ucyA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3JBbGwoJ2J1dHRvblt0YWJpbmRleF0nKTtcblxuXG4gIGlmIChbOSwgMTMsIDMyLCAyN10uaW5kZXhPZihrZXlDb2RlKSA9PT0gLTEpIHtcbiAgICAvLyBEb24ndCBkbyB3b3JrIG9uIGtleXMgd2UgZG9uJ3QgY2FyZSBhYm91dC5cbiAgICByZXR1cm47XG4gIH1cblxuICB2YXIgJHRhcmdldEVsZW1lbnQgPSBlLnRhcmdldCB8fCBlLnNyY0VsZW1lbnQ7XG5cbiAgdmFyIGJ0bkluZGV4ID0gLTE7IC8vIEZpbmQgdGhlIGJ1dHRvbiAtIG5vdGUsIHRoaXMgaXMgYSBub2RlbGlzdCwgbm90IGFuIGFycmF5LlxuICBmb3IgKHZhciBpID0gMDsgaSA8ICRtb2RhbEJ1dHRvbnMubGVuZ3RoOyBpKyspIHtcbiAgICBpZiAoJHRhcmdldEVsZW1lbnQgPT09ICRtb2RhbEJ1dHRvbnNbaV0pIHtcbiAgICAgIGJ0bkluZGV4ID0gaTtcbiAgICAgIGJyZWFrO1xuICAgIH1cbiAgfVxuXG4gIGlmIChrZXlDb2RlID09PSA5KSB7XG4gICAgLy8gVEFCXG4gICAgaWYgKGJ0bkluZGV4ID09PSAtMSkge1xuICAgICAgLy8gTm8gYnV0dG9uIGZvY3VzZWQuIEp1bXAgdG8gdGhlIGNvbmZpcm0gYnV0dG9uLlxuICAgICAgJHRhcmdldEVsZW1lbnQgPSAkb2tCdXR0b247XG4gICAgfSBlbHNlIHtcbiAgICAgIC8vIEN5Y2xlIHRvIHRoZSBuZXh0IGJ1dHRvblxuICAgICAgaWYgKGJ0bkluZGV4ID09PSAkbW9kYWxCdXR0b25zLmxlbmd0aCAtIDEpIHtcbiAgICAgICAgJHRhcmdldEVsZW1lbnQgPSAkbW9kYWxCdXR0b25zWzBdO1xuICAgICAgfSBlbHNlIHtcbiAgICAgICAgJHRhcmdldEVsZW1lbnQgPSAkbW9kYWxCdXR0b25zW2J0bkluZGV4ICsgMV07XG4gICAgICB9XG4gICAgfVxuXG4gICAgc3RvcEV2ZW50UHJvcGFnYXRpb24oZSk7XG4gICAgJHRhcmdldEVsZW1lbnQuZm9jdXMoKTtcblxuICAgIGlmIChwYXJhbXMuY29uZmlybUJ1dHRvbkNvbG9yKSB7XG4gICAgICBzZXRGb2N1c1N0eWxlKCR0YXJnZXRFbGVtZW50LCBwYXJhbXMuY29uZmlybUJ1dHRvbkNvbG9yKTtcbiAgICB9XG4gIH0gZWxzZSB7XG4gICAgaWYgKGtleUNvZGUgPT09IDEzKSB7XG4gICAgICBpZiAoJHRhcmdldEVsZW1lbnQudGFnTmFtZSA9PT0gJ0lOUFVUJykge1xuICAgICAgICAkdGFyZ2V0RWxlbWVudCA9ICRva0J1dHRvbjtcbiAgICAgICAgJG9rQnV0dG9uLmZvY3VzKCk7XG4gICAgICB9XG5cbiAgICAgIGlmIChidG5JbmRleCA9PT0gLTEpIHtcbiAgICAgICAgLy8gRU5URVIvU1BBQ0UgY2xpY2tlZCBvdXRzaWRlIG9mIGEgYnV0dG9uLlxuICAgICAgICAkdGFyZ2V0RWxlbWVudCA9ICRva0J1dHRvbjtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIC8vIERvIG5vdGhpbmcgLSBsZXQgdGhlIGJyb3dzZXIgaGFuZGxlIGl0LlxuICAgICAgICAkdGFyZ2V0RWxlbWVudCA9IHVuZGVmaW5lZDtcbiAgICAgIH1cbiAgICB9IGVsc2UgaWYgKGtleUNvZGUgPT09IDI3ICYmIHBhcmFtcy5hbGxvd0VzY2FwZUtleSA9PT0gdHJ1ZSkge1xuICAgICAgJHRhcmdldEVsZW1lbnQgPSAkY2FuY2VsQnV0dG9uO1xuICAgICAgZmlyZUNsaWNrKCR0YXJnZXRFbGVtZW50LCBlKTtcbiAgICB9IGVsc2Uge1xuICAgICAgLy8gRmFsbGJhY2sgLSBsZXQgdGhlIGJyb3dzZXIgaGFuZGxlIGl0LlxuICAgICAgJHRhcmdldEVsZW1lbnQgPSB1bmRlZmluZWQ7XG4gICAgfVxuICB9XG59O1xuXG5leHBvcnQgZGVmYXVsdCBoYW5kbGVLZXlEb3duO1xuIiwiaW1wb3J0IHsgaGV4VG9SZ2IgfSBmcm9tICcuL3V0aWxzJztcbmltcG9ydCB7IHJlbW92ZUNsYXNzLCBnZXRUb3BNYXJnaW4sIGZhZGVJbiwgc2hvdywgYWRkQ2xhc3MgfSBmcm9tICcuL2hhbmRsZS1kb20nO1xuaW1wb3J0IGRlZmF1bHRQYXJhbXMgZnJvbSAnLi9kZWZhdWx0LXBhcmFtcyc7XG5cbnZhciBtb2RhbENsYXNzICAgPSAnLnN3ZWV0LWFsZXJ0JztcbnZhciBvdmVybGF5Q2xhc3MgPSAnLnN3ZWV0LW92ZXJsYXknO1xuXG4vKlxuICogQWRkIG1vZGFsICsgb3ZlcmxheSB0byBET01cbiAqL1xuaW1wb3J0IGluamVjdGVkSFRNTCBmcm9tICcuL2luamVjdGVkLWh0bWwnO1xuXG52YXIgc3dlZXRBbGVydEluaXRpYWxpemUgPSBmdW5jdGlvbigpIHtcbiAgdmFyIHN3ZWV0V3JhcCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpdicpO1xuICBzd2VldFdyYXAuaW5uZXJIVE1MID0gaW5qZWN0ZWRIVE1MO1xuXG4gIC8vIEFwcGVuZCBlbGVtZW50cyB0byBib2R5XG4gIHdoaWxlIChzd2VldFdyYXAuZmlyc3RDaGlsZCkge1xuICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoc3dlZXRXcmFwLmZpcnN0Q2hpbGQpO1xuICB9XG59O1xuXG4vKlxuICogR2V0IERPTSBlbGVtZW50IG9mIG1vZGFsXG4gKi9cbnZhciBnZXRNb2RhbCA9IGZ1bmN0aW9uKCkge1xuICB2YXIgJG1vZGFsID0gZG9jdW1lbnQucXVlcnlTZWxlY3Rvcihtb2RhbENsYXNzKTtcblxuICBpZiAoISRtb2RhbCkge1xuICAgIHN3ZWV0QWxlcnRJbml0aWFsaXplKCk7XG4gICAgJG1vZGFsID0gZ2V0TW9kYWwoKTtcbiAgfVxuXG4gIHJldHVybiAkbW9kYWw7XG59O1xuXG4vKlxuICogR2V0IERPTSBlbGVtZW50IG9mIGlucHV0IChpbiBtb2RhbClcbiAqL1xudmFyIGdldElucHV0ID0gZnVuY3Rpb24oKSB7XG4gIHZhciAkbW9kYWwgPSBnZXRNb2RhbCgpO1xuICBpZiAoJG1vZGFsKSB7XG4gICAgcmV0dXJuICRtb2RhbC5xdWVyeVNlbGVjdG9yKCdpbnB1dCcpO1xuICB9XG59O1xuXG4vKlxuICogR2V0IERPTSBlbGVtZW50IG9mIG92ZXJsYXlcbiAqL1xudmFyIGdldE92ZXJsYXkgPSBmdW5jdGlvbigpIHtcbiAgcmV0dXJuIGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3Iob3ZlcmxheUNsYXNzKTtcbn07XG5cbi8qXG4gKiBBZGQgYm94LXNoYWRvdyBzdHlsZSB0byBidXR0b24gKGRlcGVuZGluZyBvbiBpdHMgY2hvc2VuIGJnLWNvbG9yKVxuICovXG52YXIgc2V0Rm9jdXNTdHlsZSA9IGZ1bmN0aW9uKCRidXR0b24sIGJnQ29sb3IpIHtcbiAgdmFyIHJnYkNvbG9yID0gaGV4VG9SZ2IoYmdDb2xvcik7XG4gICRidXR0b24uc3R5bGUuYm94U2hhZG93ID0gJzAgMCAycHggcmdiYSgnICsgcmdiQ29sb3IgKyAnLCAwLjgpLCBpbnNldCAwIDAgMCAxcHggcmdiYSgwLCAwLCAwLCAwLjA1KSc7XG59O1xuXG4vKlxuICogQW5pbWF0aW9uIHdoZW4gb3BlbmluZyBtb2RhbFxuICovXG52YXIgb3Blbk1vZGFsID0gZnVuY3Rpb24oY2FsbGJhY2spIHtcbiAgdmFyICRtb2RhbCA9IGdldE1vZGFsKCk7XG4gIGZhZGVJbihnZXRPdmVybGF5KCksIDEwKTtcbiAgc2hvdygkbW9kYWwpO1xuICBhZGRDbGFzcygkbW9kYWwsICdzaG93U3dlZXRBbGVydCcpO1xuICByZW1vdmVDbGFzcygkbW9kYWwsICdoaWRlU3dlZXRBbGVydCcpO1xuXG4gIHdpbmRvdy5wcmV2aW91c0FjdGl2ZUVsZW1lbnQgPSBkb2N1bWVudC5hY3RpdmVFbGVtZW50O1xuICB2YXIgJG9rQnV0dG9uID0gJG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2J1dHRvbi5jb25maXJtJyk7XG4gICRva0J1dHRvbi5mb2N1cygpO1xuXG4gIHNldFRpbWVvdXQoZnVuY3Rpb24gKCkge1xuICAgIGFkZENsYXNzKCRtb2RhbCwgJ3Zpc2libGUnKTtcbiAgfSwgNTAwKTtcblxuICB2YXIgdGltZXIgPSAkbW9kYWwuZ2V0QXR0cmlidXRlKCdkYXRhLXRpbWVyJyk7XG5cbiAgaWYgKHRpbWVyICE9PSAnbnVsbCcgJiYgdGltZXIgIT09ICcnKSB7XG4gICAgdmFyIHRpbWVyQ2FsbGJhY2sgPSBjYWxsYmFjaztcbiAgICAkbW9kYWwudGltZW91dCA9IHNldFRpbWVvdXQoZnVuY3Rpb24oKSB7XG4gICAgICB2YXIgZG9uZUZ1bmN0aW9uRXhpc3RzID0gKCh0aW1lckNhbGxiYWNrIHx8IG51bGwpICYmICRtb2RhbC5nZXRBdHRyaWJ1dGUoJ2RhdGEtaGFzLWRvbmUtZnVuY3Rpb24nKSA9PT0gJ3RydWUnKTtcbiAgICAgIGlmIChkb25lRnVuY3Rpb25FeGlzdHMpIHsgXG4gICAgICAgIHRpbWVyQ2FsbGJhY2sobnVsbCk7XG4gICAgICB9XG4gICAgICBlbHNlIHtcbiAgICAgICAgc3dlZXRBbGVydC5jbG9zZSgpO1xuICAgICAgfVxuICAgIH0sIHRpbWVyKTtcbiAgfVxufTtcblxuLypcbiAqIFJlc2V0IHRoZSBzdHlsaW5nIG9mIHRoZSBpbnB1dFxuICogKGZvciBleGFtcGxlIGlmIGVycm9ycyBoYXZlIGJlZW4gc2hvd24pXG4gKi9cbnZhciByZXNldElucHV0ID0gZnVuY3Rpb24oKSB7XG4gIHZhciAkbW9kYWwgPSBnZXRNb2RhbCgpO1xuICB2YXIgJGlucHV0ID0gZ2V0SW5wdXQoKTtcblxuICByZW1vdmVDbGFzcygkbW9kYWwsICdzaG93LWlucHV0Jyk7XG4gICRpbnB1dC52YWx1ZSA9IGRlZmF1bHRQYXJhbXMuaW5wdXRWYWx1ZTtcbiAgJGlucHV0LnNldEF0dHJpYnV0ZSgndHlwZScsIGRlZmF1bHRQYXJhbXMuaW5wdXRUeXBlKTtcbiAgJGlucHV0LnNldEF0dHJpYnV0ZSgncGxhY2Vob2xkZXInLCBkZWZhdWx0UGFyYW1zLmlucHV0UGxhY2Vob2xkZXIpO1xuXG4gIHJlc2V0SW5wdXRFcnJvcigpO1xufTtcblxuXG52YXIgcmVzZXRJbnB1dEVycm9yID0gZnVuY3Rpb24oZXZlbnQpIHtcbiAgLy8gSWYgcHJlc3MgZW50ZXIgPT4gaWdub3JlXG4gIGlmIChldmVudCAmJiBldmVudC5rZXlDb2RlID09PSAxMykge1xuICAgIHJldHVybiBmYWxzZTtcbiAgfVxuXG4gIHZhciAkbW9kYWwgPSBnZXRNb2RhbCgpO1xuXG4gIHZhciAkZXJyb3JJY29uID0gJG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJy5zYS1pbnB1dC1lcnJvcicpO1xuICByZW1vdmVDbGFzcygkZXJyb3JJY29uLCAnc2hvdycpO1xuXG4gIHZhciAkZXJyb3JDb250YWluZXIgPSAkbW9kYWwucXVlcnlTZWxlY3RvcignLnNhLWVycm9yLWNvbnRhaW5lcicpO1xuICByZW1vdmVDbGFzcygkZXJyb3JDb250YWluZXIsICdzaG93Jyk7XG59O1xuXG5cbi8qXG4gKiBTZXQgXCJtYXJnaW4tdG9wXCItcHJvcGVydHkgb24gbW9kYWwgYmFzZWQgb24gaXRzIGNvbXB1dGVkIGhlaWdodFxuICovXG52YXIgZml4VmVydGljYWxQb3NpdGlvbiA9IGZ1bmN0aW9uKCkge1xuICB2YXIgJG1vZGFsID0gZ2V0TW9kYWwoKTtcbiAgJG1vZGFsLnN0eWxlLm1hcmdpblRvcCA9IGdldFRvcE1hcmdpbihnZXRNb2RhbCgpKTtcbn07XG5cblxuZXhwb3J0IHsgXG4gIHN3ZWV0QWxlcnRJbml0aWFsaXplLFxuICBnZXRNb2RhbCxcbiAgZ2V0T3ZlcmxheSxcbiAgZ2V0SW5wdXQsXG4gIHNldEZvY3VzU3R5bGUsXG4gIG9wZW5Nb2RhbCxcbiAgcmVzZXRJbnB1dCxcbiAgcmVzZXRJbnB1dEVycm9yLFxuICBmaXhWZXJ0aWNhbFBvc2l0aW9uXG59O1xuIiwidmFyIGluamVjdGVkSFRNTCA9IFxuXG4gIC8vIERhcmsgb3ZlcmxheVxuICBgPGRpdiBjbGFzcz1cInN3ZWV0LW92ZXJsYXlcIiB0YWJJbmRleD1cIi0xXCI+PC9kaXY+YCArXG5cbiAgLy8gTW9kYWxcbiAgYDxkaXYgY2xhc3M9XCJzd2VldC1hbGVydFwiPmAgK1xuXG4gICAgLy8gRXJyb3IgaWNvblxuICAgIGA8ZGl2IGNsYXNzPVwic2EtaWNvbiBzYS1lcnJvclwiPlxuICAgICAgPHNwYW4gY2xhc3M9XCJzYS14LW1hcmtcIj5cbiAgICAgICAgPHNwYW4gY2xhc3M9XCJzYS1saW5lIHNhLWxlZnRcIj48L3NwYW4+XG4gICAgICAgIDxzcGFuIGNsYXNzPVwic2EtbGluZSBzYS1yaWdodFwiPjwvc3Bhbj5cbiAgICAgIDwvc3Bhbj5cbiAgICA8L2Rpdj5gICtcblxuICAgIC8vIFdhcm5pbmcgaWNvblxuICAgIGA8ZGl2IGNsYXNzPVwic2EtaWNvbiBzYS13YXJuaW5nXCI+XG4gICAgICA8c3BhbiBjbGFzcz1cInNhLWJvZHlcIj48L3NwYW4+XG4gICAgICA8c3BhbiBjbGFzcz1cInNhLWRvdFwiPjwvc3Bhbj5cbiAgICA8L2Rpdj5gICtcblxuICAgIC8vIEluZm8gaWNvblxuICAgIGA8ZGl2IGNsYXNzPVwic2EtaWNvbiBzYS1pbmZvXCI+PC9kaXY+YCArXG5cbiAgICAvLyBTdWNjZXNzIGljb25cbiAgICBgPGRpdiBjbGFzcz1cInNhLWljb24gc2Etc3VjY2Vzc1wiPlxuICAgICAgPHNwYW4gY2xhc3M9XCJzYS1saW5lIHNhLXRpcFwiPjwvc3Bhbj5cbiAgICAgIDxzcGFuIGNsYXNzPVwic2EtbGluZSBzYS1sb25nXCI+PC9zcGFuPlxuXG4gICAgICA8ZGl2IGNsYXNzPVwic2EtcGxhY2Vob2xkZXJcIj48L2Rpdj5cbiAgICAgIDxkaXYgY2xhc3M9XCJzYS1maXhcIj48L2Rpdj5cbiAgICA8L2Rpdj5gICtcblxuICAgIGA8ZGl2IGNsYXNzPVwic2EtaWNvbiBzYS1jdXN0b21cIj48L2Rpdj5gICtcblxuICAgIC8vIFRpdGxlLCB0ZXh0IGFuZCBpbnB1dFxuICAgIGA8aDI+VGl0bGU8L2gyPlxuICAgIDxwPlRleHQ8L3A+XG4gICAgPGZpZWxkc2V0PlxuICAgICAgPGlucHV0IHR5cGU9XCJ0ZXh0XCIgdGFiSW5kZXg9XCIzXCIgLz5cbiAgICAgIDxkaXYgY2xhc3M9XCJzYS1pbnB1dC1lcnJvclwiPjwvZGl2PlxuICAgIDwvZmllbGRzZXQ+YCArXG5cbiAgICAvLyBJbnB1dCBlcnJvcnNcbiAgICBgPGRpdiBjbGFzcz1cInNhLWVycm9yLWNvbnRhaW5lclwiPlxuICAgICAgPGRpdiBjbGFzcz1cImljb25cIj4hPC9kaXY+XG4gICAgICA8cD5Ob3QgdmFsaWQhPC9wPlxuICAgIDwvZGl2PmAgK1xuXG4gICAgLy8gQ2FuY2VsIGFuZCBjb25maXJtIGJ1dHRvbnNcbiAgICBgPGRpdiBjbGFzcz1cInNhLWJ1dHRvbi1jb250YWluZXJcIj5cbiAgICAgIDxidXR0b24gY2xhc3M9XCJjYW5jZWxcIiB0YWJJbmRleD1cIjJcIj5DYW5jZWw8L2J1dHRvbj5cbiAgICAgIDxkaXYgY2xhc3M9XCJzYS1jb25maXJtLWJ1dHRvbi1jb250YWluZXJcIj5cbiAgICAgICAgPGJ1dHRvbiBjbGFzcz1cImNvbmZpcm1cIiB0YWJJbmRleD1cIjFcIj5PSzwvYnV0dG9uPmAgKyBcblxuICAgICAgICAvLyBMb2FkaW5nIGFuaW1hdGlvblxuICAgICAgICBgPGRpdiBjbGFzcz1cImxhLWJhbGwtZmFsbFwiPlxuICAgICAgICAgIDxkaXY+PC9kaXY+XG4gICAgICAgICAgPGRpdj48L2Rpdj5cbiAgICAgICAgICA8ZGl2PjwvZGl2PlxuICAgICAgICA8L2Rpdj5cbiAgICAgIDwvZGl2PlxuICAgIDwvZGl2PmAgK1xuXG4gIC8vIEVuZCBvZiBtb2RhbFxuICBgPC9kaXY+YDtcblxuZXhwb3J0IGRlZmF1bHQgaW5qZWN0ZWRIVE1MO1xuIiwidmFyIGFsZXJ0VHlwZXMgPSBbJ2Vycm9yJywgJ3dhcm5pbmcnLCAnaW5mbycsICdzdWNjZXNzJywgJ2lucHV0JywgJ3Byb21wdCddO1xuXG5pbXBvcnQge1xuICBpc0lFOFxufSBmcm9tICcuL3V0aWxzJztcblxuaW1wb3J0IHtcbiAgZ2V0TW9kYWwsXG4gIGdldElucHV0LFxuICBzZXRGb2N1c1N0eWxlXG59IGZyb20gJy4vaGFuZGxlLXN3YWwtZG9tJztcblxuaW1wb3J0IHtcbiAgaGFzQ2xhc3MsIGFkZENsYXNzLCByZW1vdmVDbGFzcyxcbiAgZXNjYXBlSHRtbCxcbiAgX3Nob3csIHNob3csIF9oaWRlLCBoaWRlXG59IGZyb20gJy4vaGFuZGxlLWRvbSc7XG5cblxuLypcbiAqIFNldCB0eXBlLCB0ZXh0IGFuZCBhY3Rpb25zIG9uIG1vZGFsXG4gKi9cbnZhciBzZXRQYXJhbWV0ZXJzID0gZnVuY3Rpb24ocGFyYW1zKSB7XG4gIHZhciBtb2RhbCA9IGdldE1vZGFsKCk7XG5cbiAgdmFyICR0aXRsZSA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2gyJyk7XG4gIHZhciAkdGV4dCA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ3AnKTtcbiAgdmFyICRjYW5jZWxCdG4gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCdidXR0b24uY2FuY2VsJyk7XG4gIHZhciAkY29uZmlybUJ0biA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJ2J1dHRvbi5jb25maXJtJyk7XG5cbiAgLypcbiAgICogVGl0bGVcbiAgICovXG4gICR0aXRsZS5pbm5lckhUTUwgPSBwYXJhbXMuaHRtbCA/IHBhcmFtcy50aXRsZSA6IGVzY2FwZUh0bWwocGFyYW1zLnRpdGxlKS5zcGxpdCgnXFxuJykuam9pbignPGJyPicpO1xuXG4gIC8qXG4gICAqIFRleHRcbiAgICovXG4gICR0ZXh0LmlubmVySFRNTCA9IHBhcmFtcy5odG1sID8gcGFyYW1zLnRleHQgOiBlc2NhcGVIdG1sKHBhcmFtcy50ZXh0IHx8ICcnKS5zcGxpdCgnXFxuJykuam9pbignPGJyPicpO1xuICBpZiAocGFyYW1zLnRleHQpIHNob3coJHRleHQpO1xuXG4gIC8qXG4gICAqIEN1c3RvbSBjbGFzc1xuICAgKi9cbiAgaWYgKHBhcmFtcy5jdXN0b21DbGFzcykge1xuICAgIGFkZENsYXNzKG1vZGFsLCBwYXJhbXMuY3VzdG9tQ2xhc3MpO1xuICAgIG1vZGFsLnNldEF0dHJpYnV0ZSgnZGF0YS1jdXN0b20tY2xhc3MnLCBwYXJhbXMuY3VzdG9tQ2xhc3MpO1xuICB9IGVsc2Uge1xuICAgIC8vIEZpbmQgcHJldmlvdXNseSBzZXQgY2xhc3NlcyBhbmQgcmVtb3ZlIHRoZW1cbiAgICBsZXQgY3VzdG9tQ2xhc3MgPSBtb2RhbC5nZXRBdHRyaWJ1dGUoJ2RhdGEtY3VzdG9tLWNsYXNzJyk7XG4gICAgcmVtb3ZlQ2xhc3MobW9kYWwsIGN1c3RvbUNsYXNzKTtcbiAgICBtb2RhbC5zZXRBdHRyaWJ1dGUoJ2RhdGEtY3VzdG9tLWNsYXNzJywgJycpO1xuICB9XG5cbiAgLypcbiAgICogSWNvblxuICAgKi9cbiAgaGlkZShtb2RhbC5xdWVyeVNlbGVjdG9yQWxsKCcuc2EtaWNvbicpKTtcblxuICBpZiAocGFyYW1zLnR5cGUgJiYgIWlzSUU4KCkpIHtcblxuICAgIGxldCB2YWxpZFR5cGUgPSBmYWxzZTtcblxuICAgIGZvciAobGV0IGkgPSAwOyBpIDwgYWxlcnRUeXBlcy5sZW5ndGg7IGkrKykge1xuICAgICAgaWYgKHBhcmFtcy50eXBlID09PSBhbGVydFR5cGVzW2ldKSB7XG4gICAgICAgIHZhbGlkVHlwZSA9IHRydWU7XG4gICAgICAgIGJyZWFrO1xuICAgICAgfVxuICAgIH1cblxuICAgIGlmICghdmFsaWRUeXBlKSB7XG4gICAgICBsb2dTdHIoJ1Vua25vd24gYWxlcnQgdHlwZTogJyArIHBhcmFtcy50eXBlKTtcbiAgICAgIHJldHVybiBmYWxzZTtcbiAgICB9XG5cbiAgICBsZXQgdHlwZXNXaXRoSWNvbnMgPSBbJ3N1Y2Nlc3MnLCAnZXJyb3InLCAnd2FybmluZycsICdpbmZvJ107XG4gICAgbGV0ICRpY29uO1xuXG4gICAgaWYgKHR5cGVzV2l0aEljb25zLmluZGV4T2YocGFyYW1zLnR5cGUpICE9PSAtMSkge1xuICAgICAgJGljb24gPSBtb2RhbC5xdWVyeVNlbGVjdG9yKCcuc2EtaWNvbi4nICsgJ3NhLScgKyBwYXJhbXMudHlwZSk7XG4gICAgICBzaG93KCRpY29uKTtcbiAgICB9XG5cbiAgICBsZXQgJGlucHV0ID0gZ2V0SW5wdXQoKTtcblxuICAgIC8vIEFuaW1hdGUgaWNvblxuICAgIHN3aXRjaCAocGFyYW1zLnR5cGUpIHtcblxuICAgICAgY2FzZSAnc3VjY2Vzcyc6XG4gICAgICAgIGFkZENsYXNzKCRpY29uLCAnYW5pbWF0ZScpO1xuICAgICAgICBhZGRDbGFzcygkaWNvbi5xdWVyeVNlbGVjdG9yKCcuc2EtdGlwJyksICdhbmltYXRlU3VjY2Vzc1RpcCcpO1xuICAgICAgICBhZGRDbGFzcygkaWNvbi5xdWVyeVNlbGVjdG9yKCcuc2EtbG9uZycpLCAnYW5pbWF0ZVN1Y2Nlc3NMb25nJyk7XG4gICAgICAgIGJyZWFrO1xuXG4gICAgICBjYXNlICdlcnJvcic6XG4gICAgICAgIGFkZENsYXNzKCRpY29uLCAnYW5pbWF0ZUVycm9ySWNvbicpO1xuICAgICAgICBhZGRDbGFzcygkaWNvbi5xdWVyeVNlbGVjdG9yKCcuc2EteC1tYXJrJyksICdhbmltYXRlWE1hcmsnKTtcbiAgICAgICAgYnJlYWs7XG5cbiAgICAgIGNhc2UgJ3dhcm5pbmcnOlxuICAgICAgICBhZGRDbGFzcygkaWNvbiwgJ3B1bHNlV2FybmluZycpO1xuICAgICAgICBhZGRDbGFzcygkaWNvbi5xdWVyeVNlbGVjdG9yKCcuc2EtYm9keScpLCAncHVsc2VXYXJuaW5nSW5zJyk7XG4gICAgICAgIGFkZENsYXNzKCRpY29uLnF1ZXJ5U2VsZWN0b3IoJy5zYS1kb3QnKSwgJ3B1bHNlV2FybmluZ0lucycpO1xuICAgICAgICBicmVhaztcblxuICAgICAgY2FzZSAnaW5wdXQnOlxuICAgICAgY2FzZSAncHJvbXB0JzpcbiAgICAgICAgJGlucHV0LnNldEF0dHJpYnV0ZSgndHlwZScsIHBhcmFtcy5pbnB1dFR5cGUpO1xuICAgICAgICAkaW5wdXQudmFsdWUgPSBwYXJhbXMuaW5wdXRWYWx1ZTtcbiAgICAgICAgJGlucHV0LnNldEF0dHJpYnV0ZSgncGxhY2Vob2xkZXInLCBwYXJhbXMuaW5wdXRQbGFjZWhvbGRlcik7XG4gICAgICAgIGFkZENsYXNzKG1vZGFsLCAnc2hvdy1pbnB1dCcpO1xuICAgICAgICBzZXRUaW1lb3V0KGZ1bmN0aW9uICgpIHtcbiAgICAgICAgICAkaW5wdXQuZm9jdXMoKTtcbiAgICAgICAgICAkaW5wdXQuYWRkRXZlbnRMaXN0ZW5lcigna2V5dXAnLCBzd2FsLnJlc2V0SW5wdXRFcnJvcik7XG4gICAgICAgIH0sIDQwMCk7XG4gICAgICAgIGJyZWFrO1xuICAgIH1cbiAgfVxuXG4gIC8qXG4gICAqIEN1c3RvbSBpbWFnZVxuICAgKi9cbiAgaWYgKHBhcmFtcy5pbWFnZVVybCkge1xuICAgIGxldCAkY3VzdG9tSWNvbiA9IG1vZGFsLnF1ZXJ5U2VsZWN0b3IoJy5zYS1pY29uLnNhLWN1c3RvbScpO1xuXG4gICAgJGN1c3RvbUljb24uc3R5bGUuYmFja2dyb3VuZEltYWdlID0gJ3VybCgnICsgcGFyYW1zLmltYWdlVXJsICsgJyknO1xuICAgIHNob3coJGN1c3RvbUljb24pO1xuXG4gICAgbGV0IF9pbWdXaWR0aCA9IDgwO1xuICAgIGxldCBfaW1nSGVpZ2h0ID0gODA7XG5cbiAgICBpZiAocGFyYW1zLmltYWdlU2l6ZSkge1xuICAgICAgbGV0IGRpbWVuc2lvbnMgPSBwYXJhbXMuaW1hZ2VTaXplLnRvU3RyaW5nKCkuc3BsaXQoJ3gnKTtcbiAgICAgIGxldCBpbWdXaWR0aCA9IGRpbWVuc2lvbnNbMF07XG4gICAgICBsZXQgaW1nSGVpZ2h0ID0gZGltZW5zaW9uc1sxXTtcblxuICAgICAgaWYgKCFpbWdXaWR0aCB8fCAhaW1nSGVpZ2h0KSB7XG4gICAgICAgIGxvZ1N0cignUGFyYW1ldGVyIGltYWdlU2l6ZSBleHBlY3RzIHZhbHVlIHdpdGggZm9ybWF0IFdJRFRIeEhFSUdIVCwgZ290ICcgKyBwYXJhbXMuaW1hZ2VTaXplKTtcbiAgICAgIH0gZWxzZSB7XG4gICAgICAgIF9pbWdXaWR0aCA9IGltZ1dpZHRoO1xuICAgICAgICBfaW1nSGVpZ2h0ID0gaW1nSGVpZ2h0O1xuICAgICAgfVxuICAgIH1cblxuICAgICRjdXN0b21JY29uLnNldEF0dHJpYnV0ZSgnc3R5bGUnLCAkY3VzdG9tSWNvbi5nZXRBdHRyaWJ1dGUoJ3N0eWxlJykgKyAnd2lkdGg6JyArIF9pbWdXaWR0aCArICdweDsgaGVpZ2h0OicgKyBfaW1nSGVpZ2h0ICsgJ3B4Jyk7XG4gIH1cblxuICAvKlxuICAgKiBTaG93IGNhbmNlbCBidXR0b24/XG4gICAqL1xuICBtb2RhbC5zZXRBdHRyaWJ1dGUoJ2RhdGEtaGFzLWNhbmNlbC1idXR0b24nLCBwYXJhbXMuc2hvd0NhbmNlbEJ1dHRvbik7XG4gIGlmIChwYXJhbXMuc2hvd0NhbmNlbEJ1dHRvbikge1xuICAgICRjYW5jZWxCdG4uc3R5bGUuZGlzcGxheSA9ICdpbmxpbmUtYmxvY2snO1xuICB9IGVsc2Uge1xuICAgIGhpZGUoJGNhbmNlbEJ0bik7XG4gIH1cblxuICAvKlxuICAgKiBTaG93IGNvbmZpcm0gYnV0dG9uP1xuICAgKi9cbiAgbW9kYWwuc2V0QXR0cmlidXRlKCdkYXRhLWhhcy1jb25maXJtLWJ1dHRvbicsIHBhcmFtcy5zaG93Q29uZmlybUJ1dHRvbik7XG4gIGlmIChwYXJhbXMuc2hvd0NvbmZpcm1CdXR0b24pIHtcbiAgICAkY29uZmlybUJ0bi5zdHlsZS5kaXNwbGF5ID0gJ2lubGluZS1ibG9jayc7XG4gIH0gZWxzZSB7XG4gICAgaGlkZSgkY29uZmlybUJ0bik7XG4gIH1cblxuICAvKlxuICAgKiBDdXN0b20gdGV4dCBvbiBjYW5jZWwvY29uZmlybSBidXR0b25zXG4gICAqL1xuICBpZiAocGFyYW1zLmNhbmNlbEJ1dHRvblRleHQpIHtcbiAgICAkY2FuY2VsQnRuLmlubmVySFRNTCA9IGVzY2FwZUh0bWwocGFyYW1zLmNhbmNlbEJ1dHRvblRleHQpO1xuICB9XG4gIGlmIChwYXJhbXMuY29uZmlybUJ1dHRvblRleHQpIHtcbiAgICAkY29uZmlybUJ0bi5pbm5lckhUTUwgPSBlc2NhcGVIdG1sKHBhcmFtcy5jb25maXJtQnV0dG9uVGV4dCk7XG4gIH1cblxuICAvKlxuICAgKiBDdXN0b20gY29sb3Igb24gY29uZmlybSBidXR0b25cbiAgICovXG4gIGlmIChwYXJhbXMuY29uZmlybUJ1dHRvbkNvbG9yKSB7XG4gICAgLy8gU2V0IGNvbmZpcm0gYnV0dG9uIHRvIHNlbGVjdGVkIGJhY2tncm91bmQgY29sb3JcbiAgICAkY29uZmlybUJ0bi5zdHlsZS5iYWNrZ3JvdW5kQ29sb3IgPSBwYXJhbXMuY29uZmlybUJ1dHRvbkNvbG9yO1xuXG4gICAgLy8gU2V0IHRoZSBjb25maXJtIGJ1dHRvbiBjb2xvciB0byB0aGUgbG9hZGluZyByaW5nXG4gICAgJGNvbmZpcm1CdG4uc3R5bGUuYm9yZGVyTGVmdENvbG9yID0gcGFyYW1zLmNvbmZpcm1Mb2FkaW5nQnV0dG9uQ29sb3I7XG4gICAgJGNvbmZpcm1CdG4uc3R5bGUuYm9yZGVyUmlnaHRDb2xvciA9IHBhcmFtcy5jb25maXJtTG9hZGluZ0J1dHRvbkNvbG9yO1xuXG4gICAgLy8gU2V0IGJveC1zaGFkb3cgdG8gZGVmYXVsdCBmb2N1c2VkIGJ1dHRvblxuICAgIHNldEZvY3VzU3R5bGUoJGNvbmZpcm1CdG4sIHBhcmFtcy5jb25maXJtQnV0dG9uQ29sb3IpO1xuICB9XG5cbiAgLypcbiAgICogQWxsb3cgb3V0c2lkZSBjbGlja1xuICAgKi9cbiAgbW9kYWwuc2V0QXR0cmlidXRlKCdkYXRhLWFsbG93LW91dHNpZGUtY2xpY2snLCBwYXJhbXMuYWxsb3dPdXRzaWRlQ2xpY2spO1xuXG4gIC8qXG4gICAqIENhbGxiYWNrIGZ1bmN0aW9uXG4gICAqL1xuICB2YXIgaGFzRG9uZUZ1bmN0aW9uID0gcGFyYW1zLmRvbmVGdW5jdGlvbiA/IHRydWUgOiBmYWxzZTtcbiAgbW9kYWwuc2V0QXR0cmlidXRlKCdkYXRhLWhhcy1kb25lLWZ1bmN0aW9uJywgaGFzRG9uZUZ1bmN0aW9uKTtcblxuICAvKlxuICAgKiBBbmltYXRpb25cbiAgICovXG4gIGlmICghcGFyYW1zLmFuaW1hdGlvbikge1xuICAgIG1vZGFsLnNldEF0dHJpYnV0ZSgnZGF0YS1hbmltYXRpb24nLCAnbm9uZScpO1xuICB9IGVsc2UgaWYgKHR5cGVvZiBwYXJhbXMuYW5pbWF0aW9uID09PSAnc3RyaW5nJykge1xuICAgIG1vZGFsLnNldEF0dHJpYnV0ZSgnZGF0YS1hbmltYXRpb24nLCBwYXJhbXMuYW5pbWF0aW9uKTsgLy8gQ3VzdG9tIGFuaW1hdGlvblxuICB9IGVsc2Uge1xuICAgIG1vZGFsLnNldEF0dHJpYnV0ZSgnZGF0YS1hbmltYXRpb24nLCAncG9wJyk7XG4gIH1cblxuICAvKlxuICAgKiBUaW1lclxuICAgKi9cbiAgbW9kYWwuc2V0QXR0cmlidXRlKCdkYXRhLXRpbWVyJywgcGFyYW1zLnRpbWVyKTtcbn07XG5cbmV4cG9ydCBkZWZhdWx0IHNldFBhcmFtZXRlcnM7XG4iLCIvKlxuICogQWxsb3cgdXNlciB0byBwYXNzIHRoZWlyIG93biBwYXJhbXNcbiAqL1xudmFyIGV4dGVuZCA9IGZ1bmN0aW9uKGEsIGIpIHtcbiAgZm9yICh2YXIga2V5IGluIGIpIHtcbiAgICBpZiAoYi5oYXNPd25Qcm9wZXJ0eShrZXkpKSB7XG4gICAgICBhW2tleV0gPSBiW2tleV07XG4gICAgfVxuICB9XG4gIHJldHVybiBhO1xufTtcblxuLypcbiAqIENvbnZlcnQgSEVYIGNvZGVzIHRvIFJHQiB2YWx1ZXMgKCMwMDAwMDAgLT4gcmdiKDAsMCwwKSlcbiAqL1xudmFyIGhleFRvUmdiID0gZnVuY3Rpb24oaGV4KSB7XG4gIHZhciByZXN1bHQgPSAvXiM/KFthLWZcXGRdezJ9KShbYS1mXFxkXXsyfSkoW2EtZlxcZF17Mn0pJC9pLmV4ZWMoaGV4KTtcbiAgcmV0dXJuIHJlc3VsdCA/IHBhcnNlSW50KHJlc3VsdFsxXSwgMTYpICsgJywgJyArIHBhcnNlSW50KHJlc3VsdFsyXSwgMTYpICsgJywgJyArIHBhcnNlSW50KHJlc3VsdFszXSwgMTYpIDogbnVsbDtcbn07XG5cbi8qXG4gKiBDaGVjayBpZiB0aGUgdXNlciBpcyB1c2luZyBJbnRlcm5ldCBFeHBsb3JlciA4IChmb3IgZmFsbGJhY2tzKVxuICovXG52YXIgaXNJRTggPSBmdW5jdGlvbigpIHtcbiAgcmV0dXJuICh3aW5kb3cuYXR0YWNoRXZlbnQgJiYgIXdpbmRvdy5hZGRFdmVudExpc3RlbmVyKTtcbn07XG5cbi8qXG4gKiBJRSBjb21wYXRpYmxlIGxvZ2dpbmcgZm9yIGRldmVsb3BlcnNcbiAqL1xudmFyIGxvZ1N0ciA9IGZ1bmN0aW9uKHN0cmluZykge1xuICBpZiAod2luZG93LmNvbnNvbGUpIHtcbiAgICAvLyBJRS4uLlxuICAgIHdpbmRvdy5jb25zb2xlLmxvZygnU3dlZXRBbGVydDogJyArIHN0cmluZyk7XG4gIH1cbn07XG5cbi8qXG4gKiBTZXQgaG92ZXIsIGFjdGl2ZSBhbmQgZm9jdXMtc3RhdGVzIGZvciBidXR0b25zIFxuICogKHNvdXJjZTogaHR0cDovL3d3dy5zaXRlcG9pbnQuY29tL2phdmFzY3JpcHQtZ2VuZXJhdGUtbGlnaHRlci1kYXJrZXItY29sb3IpXG4gKi9cbnZhciBjb2xvckx1bWluYW5jZSA9IGZ1bmN0aW9uKGhleCwgbHVtKSB7XG4gIC8vIFZhbGlkYXRlIGhleCBzdHJpbmdcbiAgaGV4ID0gU3RyaW5nKGhleCkucmVwbGFjZSgvW14wLTlhLWZdL2dpLCAnJyk7XG4gIGlmIChoZXgubGVuZ3RoIDwgNikge1xuICAgIGhleCA9IGhleFswXSArIGhleFswXSArIGhleFsxXSArIGhleFsxXSArIGhleFsyXSArIGhleFsyXTtcbiAgfVxuICBsdW0gPSBsdW0gfHwgMDtcblxuICAvLyBDb252ZXJ0IHRvIGRlY2ltYWwgYW5kIGNoYW5nZSBsdW1pbm9zaXR5XG4gIHZhciByZ2IgPSAnIyc7XG4gIHZhciBjO1xuICB2YXIgaTtcblxuICBmb3IgKGkgPSAwOyBpIDwgMzsgaSsrKSB7XG4gICAgYyA9IHBhcnNlSW50KGhleC5zdWJzdHIoaSAqIDIsIDIpLCAxNik7XG4gICAgYyA9IE1hdGgucm91bmQoTWF0aC5taW4oTWF0aC5tYXgoMCwgYyArIGMgKiBsdW0pLCAyNTUpKS50b1N0cmluZygxNik7XG4gICAgcmdiICs9ICgnMDAnICsgYykuc3Vic3RyKGMubGVuZ3RoKTtcbiAgfVxuXG4gIHJldHVybiByZ2I7XG59O1xuXG5cbmV4cG9ydCB7XG4gIGV4dGVuZCxcbiAgaGV4VG9SZ2IsXG4gIGlzSUU4LFxuICBsb2dTdHIsXG4gIGNvbG9yTHVtaW5hbmNlXG59O1xuIl19
-
-
-    /*
-     * Use SweetAlert with RequireJS
+﻿/*!
+* sweetalert2 v11.4.33
+* Released under the MIT License.
+*/
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+        typeof define === 'function' && define.amd ? define(factory) :
+            (global = global || self, global.Sweetalert2 = factory());
+}(this, function () {
+    'use strict';
+
+    /**
+     * This module contains `WeakMap`s for each effectively-"private  property" that a `Swal` has.
+     * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
+     * This is the approach that Babel will probably take to implement private methods/fields
+     *   https://github.com/tc39/proposal-private-methods
+     *   https://github.com/babel/babel/pull/7555
+     * Once we have the changes from that PR in Babel, and our core class fits reasonable in *one module*
+     *   then we can use that language feature.
+     */
+    var privateProps = {
+        awaitingPromise: new WeakMap(),
+        promise: new WeakMap(),
+        innerParams: new WeakMap(),
+        domCache: new WeakMap()
+    };
+
+    const swalPrefix = 'swal2-';
+    /**
+     * @param {string[]} items
+     * @returns {object}
      */
 
-    if (typeof define === 'function' && define.amd) {
-        define(function () {
-            return sweetAlert;
+    const prefix = items => {
+        const result = {};
+
+        for (const i in items) {
+            result[items[i]] = swalPrefix + items[i];
+        }
+
+        return result;
+    };
+    const swalClasses = prefix(['container', 'shown', 'height-auto', 'iosfix', 'popup', 'modal', 'no-backdrop', 'no-transition', 'toast', 'toast-shown', 'show', 'hide', 'close', 'title', 'html-container', 'actions', 'confirm', 'deny', 'cancel', 'default-outline', 'footer', 'icon', 'icon-content', 'image', 'input', 'file', 'range', 'select', 'radio', 'checkbox', 'label', 'textarea', 'inputerror', 'input-label', 'validation-message', 'progress-steps', 'active-progress-step', 'progress-step', 'progress-step-line', 'loader', 'loading', 'styled', 'top', 'top-start', 'top-end', 'top-left', 'top-right', 'center', 'center-start', 'center-end', 'center-left', 'center-right', 'bottom', 'bottom-start', 'bottom-end', 'bottom-left', 'bottom-right', 'grow-row', 'grow-column', 'grow-fullscreen', 'rtl', 'timer-progress-bar', 'timer-progress-bar-container', 'scrollbar-measure', 'icon-success', 'icon-warning', 'icon-info', 'icon-question', 'icon-error', 'no-war']);
+    const iconTypes = prefix(['success', 'warning', 'info', 'question', 'error']);
+
+    const consolePrefix = 'SweetAlert2:';
+    /**
+     * Filter the unique values into a new array
+     *
+     * @param {Array} arr
+     * @returns {Array}
+     */
+
+    const uniqueArray = arr => {
+        const result = [];
+
+        for (let i = 0; i < arr.length; i++) {
+            if (result.indexOf(arr[i]) === -1) {
+                result.push(arr[i]);
+            }
+        }
+
+        return result;
+    };
+    /**
+     * Capitalize the first letter of a string
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+
+    const capitalizeFirstLetter = str => str.charAt(0).toUpperCase() + str.slice(1);
+    /**
+     * Standardize console warnings
+     *
+     * @param {string | Array} message
+     */
+
+    const warn = message => {
+        console.warn("".concat(consolePrefix, " ").concat(typeof message === 'object' ? message.join(' ') : message));
+    };
+    /**
+     * Standardize console errors
+     *
+     * @param {string} message
+     */
+
+    const error = message => {
+        console.error("".concat(consolePrefix, " ").concat(message));
+    };
+    /**
+     * Private global state for `warnOnce`
+     *
+     * @type {Array}
+     * @private
+     */
+
+    const previousWarnOnceMessages = [];
+    /**
+     * Show a console warning, but only if it hasn't already been shown
+     *
+     * @param {string} message
+     */
+
+    const warnOnce = message => {
+        if (!previousWarnOnceMessages.includes(message)) {
+            previousWarnOnceMessages.push(message);
+            warn(message);
+        }
+    };
+    /**
+     * Show a one-time console warning about deprecated params/methods
+     *
+     * @param {string} deprecatedParam
+     * @param {string} useInstead
+     */
+
+    const warnAboutDeprecation = (deprecatedParam, useInstead) => {
+        warnOnce("\"".concat(deprecatedParam, "\" is deprecated and will be removed in the next major release. Please use \"").concat(useInstead, "\" instead."));
+    };
+    /**
+     * If `arg` is a function, call it (with no arguments or context) and return the result.
+     * Otherwise, just pass the value through
+     *
+     * @param {Function | any} arg
+     * @returns {any}
+     */
+
+    const callIfFunction = arg => typeof arg === 'function' ? arg() : arg;
+    /**
+     * @param {any} arg
+     * @returns {boolean}
+     */
+
+    const hasToPromiseFn = arg => arg && typeof arg.toPromise === 'function';
+    /**
+     * @param {any} arg
+     * @returns {Promise}
+     */
+
+    const asPromise = arg => hasToPromiseFn(arg) ? arg.toPromise() : Promise.resolve(arg);
+    /**
+     * @param {any} arg
+     * @returns {boolean}
+     */
+
+    const isPromise = arg => arg && Promise.resolve(arg) === arg;
+    /**
+     * @param {Array} arr
+     * @returns {any}
+     */
+
+    const getRandomElement = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    /**
+     * Gets the popup container which contains the backdrop and the popup itself.
+     *
+     * @returns {HTMLElement | null}
+     */
+
+    const getContainer = () => document.body.querySelector(".".concat(swalClasses.container));
+    /**
+     * @param {string} selectorString
+     * @returns {HTMLElement | null}
+     */
+
+    const elementBySelector = selectorString => {
+        const container = getContainer();
+        return container ? container.querySelector(selectorString) : null;
+    };
+    /**
+     * @param {string} className
+     * @returns {HTMLElement | null}
+     */
+
+    const elementByClass = className => {
+        return elementBySelector(".".concat(className));
+    };
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+
+    const getPopup = () => elementByClass(swalClasses.popup);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getIcon = () => elementByClass(swalClasses.icon);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getTitle = () => elementByClass(swalClasses.title);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getHtmlContainer = () => elementByClass(swalClasses['html-container']);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getImage = () => elementByClass(swalClasses.image);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getProgressSteps = () => elementByClass(swalClasses['progress-steps']);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getValidationMessage = () => elementByClass(swalClasses['validation-message']);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getConfirmButton = () => elementBySelector(".".concat(swalClasses.actions, " .").concat(swalClasses.confirm));
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getDenyButton = () => elementBySelector(".".concat(swalClasses.actions, " .").concat(swalClasses.deny));
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getInputLabel = () => elementByClass(swalClasses['input-label']);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getLoader = () => elementBySelector(".".concat(swalClasses.loader));
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getCancelButton = () => elementBySelector(".".concat(swalClasses.actions, " .").concat(swalClasses.cancel));
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getActions = () => elementByClass(swalClasses.actions);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getFooter = () => elementByClass(swalClasses.footer);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getTimerProgressBar = () => elementByClass(swalClasses['timer-progress-bar']);
+    /**
+     * @returns {HTMLElement | null}
+     */
+
+    const getCloseButton = () => elementByClass(swalClasses.close); // https://github.com/jkup/focusable/blob/master/index.js
+
+    const focusable = "\n  a[href],\n  area[href],\n  input:not([disabled]),\n  select:not([disabled]),\n  textarea:not([disabled]),\n  button:not([disabled]),\n  iframe,\n  object,\n  embed,\n  [tabindex=\"0\"],\n  [contenteditable],\n  audio[controls],\n  video[controls],\n  summary\n";
+    /**
+     * @returns {HTMLElement[]}
+     */
+
+    const getFocusableElements = () => {
+        const focusableElementsWithTabindex = Array.from(getPopup().querySelectorAll('[tabindex]:not([tabindex="-1"]):not([tabindex="0"])')) // sort according to tabindex
+            .sort((a, b) => {
+                const tabindexA = parseInt(a.getAttribute('tabindex'));
+                const tabindexB = parseInt(b.getAttribute('tabindex'));
+
+                if (tabindexA > tabindexB) {
+                    return 1;
+                } else if (tabindexA < tabindexB) {
+                    return -1;
+                }
+
+                return 0;
+            });
+        const otherFocusableElements = Array.from(getPopup().querySelectorAll(focusable)).filter(el => el.getAttribute('tabindex') !== '-1');
+        return uniqueArray(focusableElementsWithTabindex.concat(otherFocusableElements)).filter(el => isVisible(el));
+    };
+    /**
+     * @returns {boolean}
+     */
+
+    const isModal = () => {
+        return hasClass(document.body, swalClasses.shown) && !hasClass(document.body, swalClasses['toast-shown']) && !hasClass(document.body, swalClasses['no-backdrop']);
+    };
+    /**
+     * @returns {boolean}
+     */
+
+    const isToast = () => {
+        return getPopup() && hasClass(getPopup(), swalClasses.toast);
+    };
+    /**
+     * @returns {boolean}
+     */
+
+    const isLoading = () => {
+        return getPopup().hasAttribute('data-loading');
+    };
+
+    const states = {
+        previousBodyPadding: null
+    };
+    /**
+     * Securely set innerHTML of an element
+     * https://github.com/sweetalert2/sweetalert2/issues/1926
+     *
+     * @param {HTMLElement} elem
+     * @param {string} html
+     */
+
+    const setInnerHtml = (elem, html) => {
+        elem.textContent = '';
+
+        if (html) {
+            const parser = new DOMParser();
+            const parsed = parser.parseFromString(html, "text/html");
+            Array.from(parsed.querySelector('head').childNodes).forEach(child => {
+                elem.appendChild(child);
+            });
+            Array.from(parsed.querySelector('body').childNodes).forEach(child => {
+                elem.appendChild(child);
+            });
+        }
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {string} className
+     * @returns {boolean}
+     */
+
+    const hasClass = (elem, className) => {
+        if (!className) {
+            return false;
+        }
+
+        const classList = className.split(/\s+/);
+
+        for (let i = 0; i < classList.length; i++) {
+            if (!elem.classList.contains(classList[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {SweetAlertOptions} params
+     */
+
+    const removeCustomClasses = (elem, params) => {
+        Array.from(elem.classList).forEach(className => {
+            if (!Object.values(swalClasses).includes(className) && !Object.values(iconTypes).includes(className) && !Object.values(params.showClass).includes(className)) {
+                elem.classList.remove(className);
+            }
         });
-    } else if (typeof module !== 'undefined' && module.exports) {
-        module.exports = sweetAlert;
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {SweetAlertOptions} params
+     * @param {string} className
+     */
+
+
+    const applyCustomClass = (elem, params, className) => {
+        removeCustomClasses(elem, params);
+
+        if (params.customClass && params.customClass[className]) {
+            if (typeof params.customClass[className] !== 'string' && !params.customClass[className].forEach) {
+                return warn("Invalid type of customClass.".concat(className, "! Expected string or iterable object, got \"").concat(typeof params.customClass[className], "\""));
+            }
+
+            addClass(elem, params.customClass[className]);
+        }
+    };
+    /**
+     * @param {HTMLElement} popup
+     * @param {import('./renderers/renderInput').InputClass} inputClass
+     * @returns {HTMLInputElement | null}
+     */
+
+    const getInput = (popup, inputClass) => {
+        if (!inputClass) {
+            return null;
+        }
+
+        switch (inputClass) {
+            case 'select':
+            case 'textarea':
+            case 'file':
+                return popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses[inputClass]));
+
+            case 'checkbox':
+                return popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses.checkbox, " input"));
+
+            case 'radio':
+                return popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses.radio, " input:checked")) || popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses.radio, " input:first-child"));
+
+            case 'range':
+                return popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses.range, " input"));
+
+            default:
+                return popup.querySelector(".".concat(swalClasses.popup, " > .").concat(swalClasses.input));
+        }
+    };
+    /**
+     * @param {HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement} input
+     */
+
+    const focusInput = input => {
+        input.focus(); // place cursor at end of text in text input
+
+        if (input.type !== 'file') {
+            // http://stackoverflow.com/a/2345915
+            const val = input.value;
+            input.value = '';
+            input.value = val;
+        }
+    };
+    /**
+     * @param {HTMLElement | HTMLElement[] | null} target
+     * @param {string | string[] | readonly string[]} classList
+     * @param {boolean} condition
+     */
+
+    const toggleClass = (target, classList, condition) => {
+        if (!target || !classList) {
+            return;
+        }
+
+        if (typeof classList === 'string') {
+            classList = classList.split(/\s+/).filter(Boolean);
+        }
+
+        classList.forEach(className => {
+            if (Array.isArray(target)) {
+                target.forEach(elem => {
+                    condition ? elem.classList.add(className) : elem.classList.remove(className);
+                });
+            } else {
+                condition ? target.classList.add(className) : target.classList.remove(className);
+            }
+        });
+    };
+    /**
+     * @param {HTMLElement | HTMLElement[] | null} target
+     * @param {string | string[] | readonly string[]} classList
+     */
+
+    const addClass = (target, classList) => {
+        toggleClass(target, classList, true);
+    };
+    /**
+     * @param {HTMLElement | HTMLElement[] | null} target
+     * @param {string | string[] | readonly string[]} classList
+     */
+
+    const removeClass = (target, classList) => {
+        toggleClass(target, classList, false);
+    };
+    /**
+     * Get direct child of an element by class name
+     *
+     * @param {HTMLElement} elem
+     * @param {string} className
+     * @returns {HTMLElement | null}
+     */
+
+    const getDirectChildByClass = (elem, className) => {
+        const children = Array.from(elem.children);
+
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+
+            if (child instanceof HTMLElement && hasClass(child, className)) {
+                return child;
+            }
+        }
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {string} property
+     * @param {*} value
+     */
+
+    const applyNumericalStyle = (elem, property, value) => {
+        if (value === "".concat(parseInt(value))) {
+            value = parseInt(value);
+        }
+
+        if (value || parseInt(value) === 0) {
+            elem.style[property] = typeof value === 'number' ? "".concat(value, "px") : value;
+        } else {
+            elem.style.removeProperty(property);
+        }
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {string} display
+     */
+
+    const show = function (elem) {
+        let display = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'flex';
+        elem.style.display = display;
+    };
+    /**
+     * @param {HTMLElement} elem
+     */
+
+    const hide = elem => {
+        elem.style.display = 'none';
+    };
+    /**
+     * @param {HTMLElement} parent
+     * @param {string} selector
+     * @param {string} property
+     * @param {string} value
+     */
+
+    const setStyle = (parent, selector, property, value) => {
+        /** @type {HTMLElement} */
+        const el = parent.querySelector(selector);
+
+        if (el) {
+            el.style[property] = value;
+        }
+    };
+    /**
+     * @param {HTMLElement} elem
+     * @param {any} condition
+     * @param {string} display
+     */
+
+    const toggle = function (elem, condition) {
+        let display = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'flex';
+        condition ? show(elem, display) : hide(elem);
+    };
+    /**
+     * borrowed from jquery $(elem).is(':visible') implementation
+     *
+     * @param {HTMLElement} elem
+     * @returns {boolean}
+     */
+
+    const isVisible = elem => !!(elem && (elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length));
+    /**
+     * @returns {boolean}
+     */
+
+    const allButtonsAreHidden = () => !isVisible(getConfirmButton()) && !isVisible(getDenyButton()) && !isVisible(getCancelButton());
+    /**
+     * @returns {boolean}
+     */
+
+    const isScrollable = elem => !!(elem.scrollHeight > elem.clientHeight);
+    /**
+     * borrowed from https://stackoverflow.com/a/46352119
+     *
+     * @param {HTMLElement} elem
+     * @returns {boolean}
+     */
+
+    const hasCssAnimation = elem => {
+        const style = window.getComputedStyle(elem);
+        const animDuration = parseFloat(style.getPropertyValue('animation-duration') || '0');
+        const transDuration = parseFloat(style.getPropertyValue('transition-duration') || '0');
+        return animDuration > 0 || transDuration > 0;
+    };
+    /**
+     * @param {number} timer
+     * @param {boolean} reset
+     */
+
+    const animateTimerProgressBar = function (timer) {
+        let reset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        const timerProgressBar = getTimerProgressBar();
+
+        if (isVisible(timerProgressBar)) {
+            if (reset) {
+                timerProgressBar.style.transition = 'none';
+                timerProgressBar.style.width = '100%';
+            }
+
+            setTimeout(() => {
+                timerProgressBar.style.transition = "width ".concat(timer / 1000, "s linear");
+                timerProgressBar.style.width = '0%';
+            }, 10);
+        }
+    };
+    const stopTimerProgressBar = () => {
+        const timerProgressBar = getTimerProgressBar();
+        const timerProgressBarWidth = parseInt(window.getComputedStyle(timerProgressBar).width);
+        timerProgressBar.style.removeProperty('transition');
+        timerProgressBar.style.width = '100%';
+        const timerProgressBarFullWidth = parseInt(window.getComputedStyle(timerProgressBar).width);
+        const timerProgressBarPercent = timerProgressBarWidth / timerProgressBarFullWidth * 100;
+        timerProgressBar.style.removeProperty('transition');
+        timerProgressBar.style.width = "".concat(timerProgressBarPercent, "%");
+    };
+
+    const RESTORE_FOCUS_TIMEOUT = 100;
+
+    /** @type {GlobalState} */
+
+    const globalState = {};
+
+    const focusPreviousActiveElement = () => {
+        if (globalState.previousActiveElement instanceof HTMLElement) {
+            globalState.previousActiveElement.focus();
+            globalState.previousActiveElement = null;
+        } else if (document.body) {
+            document.body.focus();
+        }
+    };
+    /**
+     * Restore previous active (focused) element
+     *
+     * @param {boolean} returnFocus
+     * @returns {Promise}
+     */
+
+
+    const restoreActiveElement = returnFocus => {
+        return new Promise(resolve => {
+            if (!returnFocus) {
+                return resolve();
+            }
+
+            const x = window.scrollX;
+            const y = window.scrollY;
+            globalState.restoreFocusTimeout = setTimeout(() => {
+                focusPreviousActiveElement();
+                resolve();
+            }, RESTORE_FOCUS_TIMEOUT); // issues/900
+
+            window.scrollTo(x, y);
+        });
+    };
+
+    /**
+     * Detect Node env
+     *
+     * @returns {boolean}
+     */
+    const isNodeEnv = () => typeof window === 'undefined' || typeof document === 'undefined';
+
+    const sweetHTML = "\n <div aria-labelledby=\"".concat(swalClasses.title, "\" aria-describedby=\"").concat(swalClasses['html-container'], "\" class=\"").concat(swalClasses.popup, "\" tabindex=\"-1\">\n   <button type=\"button\" class=\"").concat(swalClasses.close, "\"></button>\n   <ul class=\"").concat(swalClasses['progress-steps'], "\"></ul>\n   <div class=\"").concat(swalClasses.icon, "\"></div>\n   <img class=\"").concat(swalClasses.image, "\" />\n   <h2 class=\"").concat(swalClasses.title, "\" id=\"").concat(swalClasses.title, "\"></h2>\n   <div class=\"").concat(swalClasses['html-container'], "\" id=\"").concat(swalClasses['html-container'], "\"></div>\n   <input class=\"").concat(swalClasses.input, "\" />\n   <input type=\"file\" class=\"").concat(swalClasses.file, "\" />\n   <div class=\"").concat(swalClasses.range, "\">\n     <input type=\"range\" />\n     <output></output>\n   </div>\n   <select class=\"").concat(swalClasses.select, "\"></select>\n   <div class=\"").concat(swalClasses.radio, "\"></div>\n   <label for=\"").concat(swalClasses.checkbox, "\" class=\"").concat(swalClasses.checkbox, "\">\n     <input type=\"checkbox\" />\n     <span class=\"").concat(swalClasses.label, "\"></span>\n   </label>\n   <textarea class=\"").concat(swalClasses.textarea, "\"></textarea>\n   <div class=\"").concat(swalClasses['validation-message'], "\" id=\"").concat(swalClasses['validation-message'], "\"></div>\n   <div class=\"").concat(swalClasses.actions, "\">\n     <div class=\"").concat(swalClasses.loader, "\"></div>\n     <button type=\"button\" class=\"").concat(swalClasses.confirm, "\"></button>\n     <button type=\"button\" class=\"").concat(swalClasses.deny, "\"></button>\n     <button type=\"button\" class=\"").concat(swalClasses.cancel, "\"></button>\n   </div>\n   <div class=\"").concat(swalClasses.footer, "\"></div>\n   <div class=\"").concat(swalClasses['timer-progress-bar-container'], "\">\n     <div class=\"").concat(swalClasses['timer-progress-bar'], "\"></div>\n   </div>\n </div>\n").replace(/(^|\n)\s*/g, '');
+    /**
+     * @returns {boolean}
+     */
+
+    const resetOldContainer = () => {
+        const oldContainer = getContainer();
+
+        if (!oldContainer) {
+            return false;
+        }
+
+        oldContainer.remove();
+        removeClass([document.documentElement, document.body], [swalClasses['no-backdrop'], swalClasses['toast-shown'], swalClasses['has-column']]);
+        return true;
+    };
+
+    const resetValidationMessage = () => {
+        globalState.currentInstance.resetValidationMessage();
+    };
+
+    const addInputChangeListeners = () => {
+        const popup = getPopup();
+        const input = getDirectChildByClass(popup, swalClasses.input);
+        const file = getDirectChildByClass(popup, swalClasses.file);
+        /** @type {HTMLInputElement} */
+
+        const range = popup.querySelector(".".concat(swalClasses.range, " input"));
+        /** @type {HTMLOutputElement} */
+
+        const rangeOutput = popup.querySelector(".".concat(swalClasses.range, " output"));
+        const select = getDirectChildByClass(popup, swalClasses.select);
+        /** @type {HTMLInputElement} */
+
+        const checkbox = popup.querySelector(".".concat(swalClasses.checkbox, " input"));
+        const textarea = getDirectChildByClass(popup, swalClasses.textarea);
+        input.oninput = resetValidationMessage;
+        file.onchange = resetValidationMessage;
+        select.onchange = resetValidationMessage;
+        checkbox.onchange = resetValidationMessage;
+        textarea.oninput = resetValidationMessage;
+
+        range.oninput = () => {
+            resetValidationMessage();
+            rangeOutput.value = range.value;
+        };
+
+        range.onchange = () => {
+            resetValidationMessage();
+            rangeOutput.value = range.value;
+        };
+    };
+    /**
+     * @param {string | HTMLElement} target
+     * @returns {HTMLElement}
+     */
+
+
+    const getTarget = target => typeof target === 'string' ? document.querySelector(target) : target;
+    /**
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const setupAccessibility = params => {
+        const popup = getPopup();
+        popup.setAttribute('role', params.toast ? 'alert' : 'dialog');
+        popup.setAttribute('aria-live', params.toast ? 'polite' : 'assertive');
+
+        if (!params.toast) {
+            popup.setAttribute('aria-modal', 'true');
+        }
+    };
+    /**
+     * @param {HTMLElement} targetElement
+     */
+
+
+    const setupRTL = targetElement => {
+        if (window.getComputedStyle(targetElement).direction === 'rtl') {
+            addClass(getContainer(), swalClasses.rtl);
+        }
+    };
+    /**
+     * Add modal + backdrop + no-war message for Russians to DOM
+     *
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const init = params => {
+        // Clean up the old popup container if it exists
+        const oldContainerExisted = resetOldContainer();
+        /* istanbul ignore if */
+
+        if (isNodeEnv()) {
+            error('SweetAlert2 requires document to initialize');
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = swalClasses.container;
+
+        if (oldContainerExisted) {
+            addClass(container, swalClasses['no-transition']);
+        }
+
+        setInnerHtml(container, sweetHTML);
+        const targetElement = getTarget(params.target);
+        targetElement.appendChild(container);
+        setupAccessibility(params);
+        setupRTL(targetElement);
+        addInputChangeListeners();
+    };
+
+    /**
+     * @param {HTMLElement | object | string} param
+     * @param {HTMLElement} target
+     */
+
+    const parseHtmlToContainer = (param, target) => {
+        // DOM element
+        if (param instanceof HTMLElement) {
+            target.appendChild(param);
+        } // Object
+        else if (typeof param === 'object') {
+            handleObject(param, target);
+        } // Plain string
+        else if (param) {
+            setInnerHtml(target, param);
+        }
+    };
+    /**
+     * @param {object} param
+     * @param {HTMLElement} target
+     */
+
+    const handleObject = (param, target) => {
+        // JQuery element(s)
+        if (param.jquery) {
+            handleJqueryElem(target, param);
+        } // For other objects use their string representation
+        else {
+            setInnerHtml(target, param.toString());
+        }
+    };
+    /**
+     * @param {HTMLElement} target
+     * @param {HTMLElement} elem
+     */
+
+
+    const handleJqueryElem = (target, elem) => {
+        target.textContent = '';
+
+        if (0 in elem) {
+            for (let i = 0; (i in elem); i++) {
+                target.appendChild(elem[i].cloneNode(true));
+            }
+        } else {
+            target.appendChild(elem.cloneNode(true));
+        }
+    };
+
+    /**
+     * @returns {'webkitAnimationEnd' | 'animationend' | false}
+     */
+
+    const animationEndEvent = (() => {
+        // Prevent run in Node env
+
+        /* istanbul ignore if */
+        if (isNodeEnv()) {
+            return false;
+        }
+
+        const testEl = document.createElement('div');
+        const transEndEventNames = {
+            WebkitAnimation: 'webkitAnimationEnd',
+            // Chrome, Safari and Opera
+            animation: 'animationend' // Standard syntax
+
+        };
+
+        for (const i in transEndEventNames) {
+            if (Object.prototype.hasOwnProperty.call(transEndEventNames, i) && typeof testEl.style[i] !== 'undefined') {
+                return transEndEventNames[i];
+            }
+        }
+
+        return false;
+    })();
+
+    /**
+     * Measure scrollbar width for padding body during modal show/hide
+     * https://github.com/twbs/bootstrap/blob/master/js/src/modal.js
+     *
+     * @returns {number}
+     */
+
+    const measureScrollbar = () => {
+        const scrollDiv = document.createElement('div');
+        scrollDiv.className = swalClasses['scrollbar-measure'];
+        document.body.appendChild(scrollDiv);
+        const scrollbarWidth = scrollDiv.getBoundingClientRect().width - scrollDiv.clientWidth;
+        document.body.removeChild(scrollDiv);
+        return scrollbarWidth;
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderActions = (instance, params) => {
+        const actions = getActions();
+        const loader = getLoader(); // Actions (buttons) wrapper
+
+        if (!params.showConfirmButton && !params.showDenyButton && !params.showCancelButton) {
+            hide(actions);
+        } else {
+            show(actions);
+        } // Custom class
+
+
+        applyCustomClass(actions, params, 'actions'); // Render all the buttons
+
+        renderButtons(actions, loader, params); // Loader
+
+        setInnerHtml(loader, params.loaderHtml);
+        applyCustomClass(loader, params, 'loader');
+    };
+    /**
+     * @param {HTMLElement} actions
+     * @param {HTMLElement} loader
+     * @param {SweetAlertOptions} params
+     */
+
+    function renderButtons(actions, loader, params) {
+        const confirmButton = getConfirmButton();
+        const denyButton = getDenyButton();
+        const cancelButton = getCancelButton(); // Render buttons
+
+        renderButton(confirmButton, 'confirm', params);
+        renderButton(denyButton, 'deny', params);
+        renderButton(cancelButton, 'cancel', params);
+        handleButtonsStyling(confirmButton, denyButton, cancelButton, params);
+
+        if (params.reverseButtons) {
+            if (params.toast) {
+                actions.insertBefore(cancelButton, confirmButton);
+                actions.insertBefore(denyButton, confirmButton);
+            } else {
+                actions.insertBefore(cancelButton, loader);
+                actions.insertBefore(denyButton, loader);
+                actions.insertBefore(confirmButton, loader);
+            }
+        }
+    }
+    /**
+     * @param {HTMLElement} confirmButton
+     * @param {HTMLElement} denyButton
+     * @param {HTMLElement} cancelButton
+     * @param {SweetAlertOptions} params
+     */
+
+
+    function handleButtonsStyling(confirmButton, denyButton, cancelButton, params) {
+        if (!params.buttonsStyling) {
+            return removeClass([confirmButton, denyButton, cancelButton], swalClasses.styled);
+        }
+
+        addClass([confirmButton, denyButton, cancelButton], swalClasses.styled); // Buttons background colors
+
+        if (params.confirmButtonColor) {
+            confirmButton.style.backgroundColor = params.confirmButtonColor;
+            addClass(confirmButton, swalClasses['default-outline']);
+        }
+
+        if (params.denyButtonColor) {
+            denyButton.style.backgroundColor = params.denyButtonColor;
+            addClass(denyButton, swalClasses['default-outline']);
+        }
+
+        if (params.cancelButtonColor) {
+            cancelButton.style.backgroundColor = params.cancelButtonColor;
+            addClass(cancelButton, swalClasses['default-outline']);
+        }
+    }
+    /**
+     * @param {HTMLElement} button
+     * @param {'confirm' | 'deny' | 'cancel'} buttonType
+     * @param {SweetAlertOptions} params
+     */
+
+
+    function renderButton(button, buttonType, params) {
+        toggle(button, params["show".concat(capitalizeFirstLetter(buttonType), "Button")], 'inline-block');
+        setInnerHtml(button, params["".concat(buttonType, "ButtonText")]); // Set caption text
+
+        button.setAttribute('aria-label', params["".concat(buttonType, "ButtonAriaLabel")]); // ARIA label
+        // Add buttons custom classes
+
+        button.className = swalClasses[buttonType];
+        applyCustomClass(button, params, "".concat(buttonType, "Button"));
+        addClass(button, params["".concat(buttonType, "ButtonClass")]);
     }
 
-})(window, document);
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderCloseButton = (instance, params) => {
+        const closeButton = getCloseButton();
+        setInnerHtml(closeButton, params.closeButtonHtml); // Custom class
+
+        applyCustomClass(closeButton, params, 'closeButton');
+        toggle(closeButton, params.showCloseButton);
+        closeButton.setAttribute('aria-label', params.closeButtonAriaLabel);
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderContainer = (instance, params) => {
+        const container = getContainer();
+
+        if (!container) {
+            return;
+        }
+
+        handleBackdropParam(container, params.backdrop);
+        handlePositionParam(container, params.position);
+        handleGrowParam(container, params.grow); // Custom class
+
+        applyCustomClass(container, params, 'container');
+    };
+    /**
+     * @param {HTMLElement} container
+     * @param {SweetAlertOptions['backdrop']} backdrop
+     */
+
+    function handleBackdropParam(container, backdrop) {
+        if (typeof backdrop === 'string') {
+            container.style.background = backdrop;
+        } else if (!backdrop) {
+            addClass([document.documentElement, document.body], swalClasses['no-backdrop']);
+        }
+    }
+    /**
+     * @param {HTMLElement} container
+     * @param {SweetAlertOptions['position']} position
+     */
+
+
+    function handlePositionParam(container, position) {
+        if (position in swalClasses) {
+            addClass(container, swalClasses[position]);
+        } else {
+            warn('The "position" parameter is not valid, defaulting to "center"');
+            addClass(container, swalClasses.center);
+        }
+    }
+    /**
+     * @param {HTMLElement} container
+     * @param {SweetAlertOptions['grow']} grow
+     */
+
+
+    function handleGrowParam(container, grow) {
+        if (grow && typeof grow === 'string') {
+            const growClass = "grow-".concat(grow);
+
+            if (growClass in swalClasses) {
+                addClass(container, swalClasses[growClass]);
+            }
+        }
+    }
+
+    /// <reference path="../../../../sweetalert2.d.ts"/>
+    /** @type {InputClass[]} */
+
+    const inputClasses = ['input', 'file', 'range', 'select', 'radio', 'checkbox', 'textarea'];
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderInput = (instance, params) => {
+        const popup = getPopup();
+        const innerParams = privateProps.innerParams.get(instance);
+        const rerender = !innerParams || params.input !== innerParams.input;
+        inputClasses.forEach(inputClass => {
+            const inputContainer = getDirectChildByClass(popup, swalClasses[inputClass]); // set attributes
+
+            setAttributes(inputClass, params.inputAttributes); // set class
+
+            inputContainer.className = swalClasses[inputClass];
+
+            if (rerender) {
+                hide(inputContainer);
+            }
+        });
+
+        if (params.input) {
+            if (rerender) {
+                showInput(params);
+            } // set custom class
+
+
+            setCustomClass(params);
+        }
+    };
+    /**
+     * @param {SweetAlertOptions} params
+     */
+
+    const showInput = params => {
+        if (!renderInputType[params.input]) {
+            return error("Unexpected type of input! Expected \"text\", \"email\", \"password\", \"number\", \"tel\", \"select\", \"radio\", \"checkbox\", \"textarea\", \"file\" or \"url\", got \"".concat(params.input, "\""));
+        }
+
+        const inputContainer = getInputContainer(params.input);
+        const input = renderInputType[params.input](inputContainer, params);
+        show(inputContainer); // input autofocus
+
+        setTimeout(() => {
+            focusInput(input);
+        });
+    };
+    /**
+     * @param {HTMLInputElement} input
+     */
+
+
+    const removeAttributes = input => {
+        for (let i = 0; i < input.attributes.length; i++) {
+            const attrName = input.attributes[i].name;
+
+            if (!['type', 'value', 'style'].includes(attrName)) {
+                input.removeAttribute(attrName);
+            }
+        }
+    };
+    /**
+     * @param {InputClass} inputClass
+     * @param {SweetAlertOptions['inputAttributes']} inputAttributes
+     */
+
+
+    const setAttributes = (inputClass, inputAttributes) => {
+        const input = getInput(getPopup(), inputClass);
+
+        if (!input) {
+            return;
+        }
+
+        removeAttributes(input);
+
+        for (const attr in inputAttributes) {
+            input.setAttribute(attr, inputAttributes[attr]);
+        }
+    };
+    /**
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const setCustomClass = params => {
+        const inputContainer = getInputContainer(params.input);
+
+        if (typeof params.customClass === 'object') {
+            addClass(inputContainer, params.customClass.input);
+        }
+    };
+    /**
+     * @param {HTMLInputElement | HTMLTextAreaElement} input
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const setInputPlaceholder = (input, params) => {
+        if (!input.placeholder || params.inputPlaceholder) {
+            input.placeholder = params.inputPlaceholder;
+        }
+    };
+    /**
+     * @param {Input} input
+     * @param {Input} prependTo
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const setInputLabel = (input, prependTo, params) => {
+        if (params.inputLabel) {
+            input.id = swalClasses.input;
+            const label = document.createElement('label');
+            const labelClass = swalClasses['input-label'];
+            label.setAttribute('for', input.id);
+            label.className = labelClass;
+
+            if (typeof params.customClass === 'object') {
+                addClass(label, params.customClass.inputLabel);
+            }
+
+            label.innerText = params.inputLabel;
+            prependTo.insertAdjacentElement('beforebegin', label);
+        }
+    };
+    /**
+     * @param {SweetAlertOptions['input']} inputType
+     * @returns {HTMLElement}
+     */
+
+
+    const getInputContainer = inputType => {
+        return getDirectChildByClass(getPopup(), swalClasses[inputType] || swalClasses.input);
+    };
+    /**
+     * @param {HTMLInputElement | HTMLOutputElement | HTMLTextAreaElement} input
+     * @param {SweetAlertOptions['inputValue']} inputValue
+     */
+
+
+    const checkAndSetInputValue = (input, inputValue) => {
+        if (['string', 'number'].includes(typeof inputValue)) {
+            input.value = "".concat(inputValue);
+        } else if (!isPromise(inputValue)) {
+            warn("Unexpected type of inputValue! Expected \"string\", \"number\" or \"Promise\", got \"".concat(typeof inputValue, "\""));
+        }
+    };
+    /** @type Record<string, (input: Input | HTMLElement, params: SweetAlertOptions) => Input> */
+
+
+    const renderInputType = {};
+    /**
+     * @param {HTMLInputElement} input
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLInputElement}
+     */
+
+    renderInputType.text = renderInputType.email = renderInputType.password = renderInputType.number = renderInputType.tel = renderInputType.url = (input, params) => {
+        checkAndSetInputValue(input, params.inputValue);
+        setInputLabel(input, input, params);
+        setInputPlaceholder(input, params);
+        input.type = params.input;
+        return input;
+    };
+    /**
+     * @param {HTMLInputElement} input
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLInputElement}
+     */
+
+
+    renderInputType.file = (input, params) => {
+        setInputLabel(input, input, params);
+        setInputPlaceholder(input, params);
+        return input;
+    };
+    /**
+     * @param {HTMLInputElement} range
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLInputElement}
+     */
+
+
+    renderInputType.range = (range, params) => {
+        const rangeInput = range.querySelector('input');
+        const rangeOutput = range.querySelector('output');
+        checkAndSetInputValue(rangeInput, params.inputValue);
+        rangeInput.type = params.input;
+        checkAndSetInputValue(rangeOutput, params.inputValue);
+        setInputLabel(rangeInput, range, params);
+        return range;
+    };
+    /**
+     * @param {HTMLSelectElement} select
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLSelectElement}
+     */
+
+
+    renderInputType.select = (select, params) => {
+        select.textContent = '';
+
+        if (params.inputPlaceholder) {
+            const placeholder = document.createElement('option');
+            setInnerHtml(placeholder, params.inputPlaceholder);
+            placeholder.value = '';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            select.appendChild(placeholder);
+        }
+
+        setInputLabel(select, select, params);
+        return select;
+    };
+    /**
+     * @param {HTMLInputElement} radio
+     * @returns {HTMLInputElement}
+     */
+
+
+    renderInputType.radio = radio => {
+        radio.textContent = '';
+        return radio;
+    };
+    /**
+     * @param {HTMLLabelElement} checkboxContainer
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLInputElement}
+     */
+
+
+    renderInputType.checkbox = (checkboxContainer, params) => {
+        const checkbox = getInput(getPopup(), 'checkbox');
+        checkbox.value = '1';
+        checkbox.id = swalClasses.checkbox;
+        checkbox.checked = Boolean(params.inputValue);
+        const label = checkboxContainer.querySelector('span');
+        setInnerHtml(label, params.inputPlaceholder);
+        return checkbox;
+    };
+    /**
+     * @param {HTMLTextAreaElement} textarea
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLTextAreaElement}
+     */
+
+
+    renderInputType.textarea = (textarea, params) => {
+        checkAndSetInputValue(textarea, params.inputValue);
+        setInputPlaceholder(textarea, params);
+        setInputLabel(textarea, textarea, params);
+        /**
+         * @param {HTMLElement} el
+         * @returns {number}
+         */
+
+        const getMargin = el => parseInt(window.getComputedStyle(el).marginLeft) + parseInt(window.getComputedStyle(el).marginRight); // https://github.com/sweetalert2/sweetalert2/issues/2291
+
+
+        setTimeout(() => {
+            // https://github.com/sweetalert2/sweetalert2/issues/1699
+            if ('MutationObserver' in window) {
+                const initialPopupWidth = parseInt(window.getComputedStyle(getPopup()).width);
+
+                const textareaResizeHandler = () => {
+                    const textareaWidth = textarea.offsetWidth + getMargin(textarea);
+
+                    if (textareaWidth > initialPopupWidth) {
+                        getPopup().style.width = "".concat(textareaWidth, "px");
+                    } else {
+                        getPopup().style.width = null;
+                    }
+                };
+
+                new MutationObserver(textareaResizeHandler).observe(textarea, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+            }
+        });
+        return textarea;
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderContent = (instance, params) => {
+        const htmlContainer = getHtmlContainer();
+        applyCustomClass(htmlContainer, params, 'htmlContainer'); // Content as HTML
+
+        if (params.html) {
+            parseHtmlToContainer(params.html, htmlContainer);
+            show(htmlContainer, 'block');
+        } // Content as plain text
+        else if (params.text) {
+            htmlContainer.textContent = params.text;
+            show(htmlContainer, 'block');
+        } // No content
+        else {
+            hide(htmlContainer);
+        }
+
+        renderInput(instance, params);
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderFooter = (instance, params) => {
+        const footer = getFooter();
+        toggle(footer, params.footer);
+
+        if (params.footer) {
+            parseHtmlToContainer(params.footer, footer);
+        } // Custom class
+
+
+        applyCustomClass(footer, params, 'footer');
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderIcon = (instance, params) => {
+        const innerParams = privateProps.innerParams.get(instance);
+        const icon = getIcon(); // if the given icon already rendered, apply the styling without re-rendering the icon
+
+        if (innerParams && params.icon === innerParams.icon) {
+            // Custom or default content
+            setContent(icon, params);
+            applyStyles(icon, params);
+            return;
+        }
+
+        if (!params.icon && !params.iconHtml) {
+            hide(icon);
+            return;
+        }
+
+        if (params.icon && Object.keys(iconTypes).indexOf(params.icon) === -1) {
+            error("Unknown icon! Expected \"success\", \"error\", \"warning\", \"info\" or \"question\", got \"".concat(params.icon, "\""));
+            hide(icon);
+            return;
+        }
+
+        show(icon); // Custom or default content
+
+        setContent(icon, params);
+        applyStyles(icon, params); // Animate icon
+
+        addClass(icon, params.showClass.icon);
+    };
+    /**
+     * @param {HTMLElement} icon
+     * @param {SweetAlertOptions} params
+     */
+
+    const applyStyles = (icon, params) => {
+        for (const iconType in iconTypes) {
+            if (params.icon !== iconType) {
+                removeClass(icon, iconTypes[iconType]);
+            }
+        }
+
+        addClass(icon, iconTypes[params.icon]); // Icon color
+
+        setColor(icon, params); // Success icon background color
+
+        adjustSuccessIconBackgroundColor(); // Custom class
+
+        applyCustomClass(icon, params, 'icon');
+    }; // Adjust success icon background color to match the popup background color
+
+
+    const adjustSuccessIconBackgroundColor = () => {
+        const popup = getPopup();
+        const popupBackgroundColor = window.getComputedStyle(popup).getPropertyValue('background-color');
+        /** @type {NodeListOf<HTMLElement>} */
+
+        const successIconParts = popup.querySelectorAll('[class^=swal2-success-circular-line], .swal2-success-fix');
+
+        for (let i = 0; i < successIconParts.length; i++) {
+            successIconParts[i].style.backgroundColor = popupBackgroundColor;
+        }
+    };
+
+    const successIconHtml = "\n  <div class=\"swal2-success-circular-line-left\"></div>\n  <span class=\"swal2-success-line-tip\"></span> <span class=\"swal2-success-line-long\"></span>\n  <div class=\"swal2-success-ring\"></div> <div class=\"swal2-success-fix\"></div>\n  <div class=\"swal2-success-circular-line-right\"></div>\n";
+    const errorIconHtml = "\n  <span class=\"swal2-x-mark\">\n    <span class=\"swal2-x-mark-line-left\"></span>\n    <span class=\"swal2-x-mark-line-right\"></span>\n  </span>\n";
+    /**
+     * @param {HTMLElement} icon
+     * @param {SweetAlertOptions} params
+     */
+
+    const setContent = (icon, params) => {
+        let oldContent = icon.innerHTML;
+        let newContent;
+
+        if (params.iconHtml) {
+            newContent = iconContent(params.iconHtml);
+        } else if (params.icon === 'success') {
+            newContent = successIconHtml;
+            oldContent = oldContent.replace(/ style=".*?"/g, ''); // undo adjustSuccessIconBackgroundColor()
+        } else if (params.icon === 'error') {
+            newContent = errorIconHtml;
+        } else {
+            const defaultIconHtml = {
+                question: '?',
+                warning: '!',
+                info: 'i'
+            };
+            newContent = iconContent(defaultIconHtml[params.icon]);
+        }
+
+        if (oldContent.trim() !== newContent.trim()) {
+            setInnerHtml(icon, newContent);
+        }
+    };
+    /**
+     * @param {HTMLElement} icon
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const setColor = (icon, params) => {
+        if (!params.iconColor) {
+            return;
+        }
+
+        icon.style.color = params.iconColor;
+        icon.style.borderColor = params.iconColor;
+
+        for (const sel of ['.swal2-success-line-tip', '.swal2-success-line-long', '.swal2-x-mark-line-left', '.swal2-x-mark-line-right']) {
+            setStyle(icon, sel, 'backgroundColor', params.iconColor);
+        }
+
+        setStyle(icon, '.swal2-success-ring', 'borderColor', params.iconColor);
+    };
+    /**
+     * @param {string} content
+     * @returns {string}
+     */
+
+
+    const iconContent = content => "<div class=\"".concat(swalClasses['icon-content'], "\">").concat(content, "</div>");
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderImage = (instance, params) => {
+        const image = getImage();
+
+        if (!params.imageUrl) {
+            return hide(image);
+        }
+
+        show(image, ''); // Src, alt
+
+        image.setAttribute('src', params.imageUrl);
+        image.setAttribute('alt', params.imageAlt); // Width, height
+
+        applyNumericalStyle(image, 'width', params.imageWidth);
+        applyNumericalStyle(image, 'height', params.imageHeight); // Class
+
+        image.className = swalClasses.image;
+        applyCustomClass(image, params, 'image');
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderPopup = (instance, params) => {
+        const container = getContainer();
+        const popup = getPopup(); // Width
+        // https://github.com/sweetalert2/sweetalert2/issues/2170
+
+        if (params.toast) {
+            applyNumericalStyle(container, 'width', params.width);
+            popup.style.width = '100%';
+            popup.insertBefore(getLoader(), getIcon());
+        } else {
+            applyNumericalStyle(popup, 'width', params.width);
+        } // Padding
+
+
+        applyNumericalStyle(popup, 'padding', params.padding); // Color
+
+        if (params.color) {
+            popup.style.color = params.color;
+        } // Background
+
+
+        if (params.background) {
+            popup.style.background = params.background;
+        }
+
+        hide(getValidationMessage()); // Classes
+
+        addClasses(popup, params);
+    };
+    /**
+     * @param {HTMLElement} popup
+     * @param {SweetAlertOptions} params
+     */
+
+    const addClasses = (popup, params) => {
+        // Default Class + showClass when updating Swal.update({})
+        popup.className = "".concat(swalClasses.popup, " ").concat(isVisible(popup) ? params.showClass.popup : '');
+
+        if (params.toast) {
+            addClass([document.documentElement, document.body], swalClasses['toast-shown']);
+            addClass(popup, swalClasses.toast);
+        } else {
+            addClass(popup, swalClasses.modal);
+        } // Custom class
+
+
+        applyCustomClass(popup, params, 'popup');
+
+        if (typeof params.customClass === 'string') {
+            addClass(popup, params.customClass);
+        } // Icon class (#1842)
+
+
+        if (params.icon) {
+            addClass(popup, swalClasses["icon-".concat(params.icon)]);
+        }
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderProgressSteps = (instance, params) => {
+        const progressStepsContainer = getProgressSteps();
+
+        if (!params.progressSteps || params.progressSteps.length === 0) {
+            return hide(progressStepsContainer);
+        }
+
+        show(progressStepsContainer);
+        progressStepsContainer.textContent = '';
+
+        if (params.currentProgressStep >= params.progressSteps.length) {
+            warn('Invalid currentProgressStep parameter, it should be less than progressSteps.length ' + '(currentProgressStep like JS arrays starts from 0)');
+        }
+
+        params.progressSteps.forEach((step, index) => {
+            const stepEl = createStepElement(step);
+            progressStepsContainer.appendChild(stepEl);
+
+            if (index === params.currentProgressStep) {
+                addClass(stepEl, swalClasses['active-progress-step']);
+            }
+
+            if (index !== params.progressSteps.length - 1) {
+                const lineEl = createLineElement(params);
+                progressStepsContainer.appendChild(lineEl);
+            }
+        });
+    };
+    /**
+     * @param {string} step
+     * @returns {HTMLLIElement}
+     */
+
+    const createStepElement = step => {
+        const stepEl = document.createElement('li');
+        addClass(stepEl, swalClasses['progress-step']);
+        setInnerHtml(stepEl, step);
+        return stepEl;
+    };
+    /**
+     * @param {SweetAlertOptions} params
+     * @returns {HTMLLIElement}
+     */
+
+
+    const createLineElement = params => {
+        const lineEl = document.createElement('li');
+        addClass(lineEl, swalClasses['progress-step-line']);
+
+        if (params.progressStepsDistance) {
+            applyNumericalStyle(lineEl, 'width', params.progressStepsDistance);
+        }
+
+        return lineEl;
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const renderTitle = (instance, params) => {
+        const title = getTitle();
+        toggle(title, params.title || params.titleText, 'block');
+
+        if (params.title) {
+            parseHtmlToContainer(params.title, title);
+        }
+
+        if (params.titleText) {
+            title.innerText = params.titleText;
+        } // Custom class
+
+
+        applyCustomClass(title, params, 'title');
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {SweetAlertOptions} params
+     */
+
+    const render = (instance, params) => {
+        renderPopup(instance, params);
+        renderContainer(instance, params);
+        renderProgressSteps(instance, params);
+        renderIcon(instance, params);
+        renderImage(instance, params);
+        renderTitle(instance, params);
+        renderCloseButton(instance, params);
+        renderContent(instance, params);
+        renderActions(instance, params);
+        renderFooter(instance, params);
+
+        if (typeof params.didRender === 'function') {
+            params.didRender(getPopup());
+        }
+    };
+
+    /**
+     * Hides loader and shows back the button which was hidden by .showLoading()
+     */
+
+    function hideLoading() {
+        // do nothing if popup is closed
+        const innerParams = privateProps.innerParams.get(this);
+
+        if (!innerParams) {
+            return;
+        }
+
+        const domCache = privateProps.domCache.get(this);
+        hide(domCache.loader);
+
+        if (isToast()) {
+            if (innerParams.icon) {
+                show(getIcon());
+            }
+        } else {
+            showRelatedButton(domCache);
+        }
+
+        removeClass([domCache.popup, domCache.actions], swalClasses.loading);
+        domCache.popup.removeAttribute('aria-busy');
+        domCache.popup.removeAttribute('data-loading');
+        domCache.confirmButton.disabled = false;
+        domCache.denyButton.disabled = false;
+        domCache.cancelButton.disabled = false;
+    }
+
+    const showRelatedButton = domCache => {
+        const buttonToReplace = domCache.popup.getElementsByClassName(domCache.loader.getAttribute('data-button-to-replace'));
+
+        if (buttonToReplace.length) {
+            show(buttonToReplace[0], 'inline-block');
+        } else if (allButtonsAreHidden()) {
+            hide(domCache.actions);
+        }
+    };
+
+    /**
+     * Gets the input DOM node, this method works with input parameter.
+     * @returns {HTMLElement | null}
+     */
+
+    function getInput$1(instance) {
+        const innerParams = privateProps.innerParams.get(instance || this);
+        const domCache = privateProps.domCache.get(instance || this);
+
+        if (!domCache) {
+            return null;
+        }
+
+        return getInput(domCache.popup, innerParams.input);
+    }
+
+    /*
+     * Global function to determine if SweetAlert2 popup is shown
+     */
+
+    const isVisible$1 = () => {
+        return isVisible(getPopup());
+    };
+    /*
+     * Global function to click 'Confirm' button
+     */
+
+    const clickConfirm = () => getConfirmButton() && getConfirmButton().click();
+    /*
+     * Global function to click 'Deny' button
+     */
+
+    const clickDeny = () => getDenyButton() && getDenyButton().click();
+    /*
+     * Global function to click 'Cancel' button
+     */
+
+    const clickCancel = () => getCancelButton() && getCancelButton().click();
+
+    const DismissReason = Object.freeze({
+        cancel: 'cancel',
+        backdrop: 'backdrop',
+        close: 'close',
+        esc: 'esc',
+        timer: 'timer'
+    });
+
+    /**
+     * @param {GlobalState} globalState
+     */
+
+    const removeKeydownHandler = globalState => {
+        if (globalState.keydownTarget && globalState.keydownHandlerAdded) {
+            globalState.keydownTarget.removeEventListener('keydown', globalState.keydownHandler, {
+                capture: globalState.keydownListenerCapture
+            });
+            globalState.keydownHandlerAdded = false;
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {GlobalState} globalState
+     * @param {SweetAlertOptions} innerParams
+     * @param {*} dismissWith
+     */
+
+    const addKeydownHandler = (instance, globalState, innerParams, dismissWith) => {
+        removeKeydownHandler(globalState);
+
+        if (!innerParams.toast) {
+            globalState.keydownHandler = e => keydownHandler(instance, e, dismissWith);
+
+            globalState.keydownTarget = innerParams.keydownListenerCapture ? window : getPopup();
+            globalState.keydownListenerCapture = innerParams.keydownListenerCapture;
+            globalState.keydownTarget.addEventListener('keydown', globalState.keydownHandler, {
+                capture: globalState.keydownListenerCapture
+            });
+            globalState.keydownHandlerAdded = true;
+        }
+    };
+    /**
+     * @param {SweetAlertOptions} innerParams
+     * @param {number} index
+     * @param {number} increment
+     */
+
+    const setFocus = (innerParams, index, increment) => {
+        const focusableElements = getFocusableElements(); // search for visible elements and select the next possible match
+
+        if (focusableElements.length) {
+            index = index + increment; // rollover to first item
+
+            if (index === focusableElements.length) {
+                index = 0; // go to last item
+            } else if (index === -1) {
+                index = focusableElements.length - 1;
+            }
+
+            return focusableElements[index].focus();
+        } // no visible focusable elements, focus the popup
+
+
+        getPopup().focus();
+    };
+    const arrowKeysNextButton = ['ArrowRight', 'ArrowDown'];
+    const arrowKeysPreviousButton = ['ArrowLeft', 'ArrowUp'];
+    /**
+     * @param {SweetAlert2} instance
+     * @param {KeyboardEvent} e
+     * @param {function} dismissWith
+     */
+
+    const keydownHandler = (instance, e, dismissWith) => {
+        const innerParams = privateProps.innerParams.get(instance);
+
+        if (!innerParams) {
+            return; // This instance has already been destroyed
+        } // Ignore keydown during IME composition
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/keydown_event#ignoring_keydown_during_ime_composition
+        // https://github.com/sweetalert2/sweetalert2/issues/720
+        // https://github.com/sweetalert2/sweetalert2/issues/2406
+
+
+        if (e.isComposing || e.keyCode === 229) {
+            return;
+        }
+
+        if (innerParams.stopKeydownPropagation) {
+            e.stopPropagation();
+        } // ENTER
+
+
+        if (e.key === 'Enter') {
+            handleEnter(instance, e, innerParams);
+        } // TAB
+        else if (e.key === 'Tab') {
+            handleTab(e, innerParams);
+        } // ARROWS - switch focus between buttons
+        else if ([...arrowKeysNextButton, ...arrowKeysPreviousButton].includes(e.key)) {
+            handleArrows(e.key);
+        } // ESC
+        else if (e.key === 'Escape') {
+            handleEsc(e, innerParams, dismissWith);
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {KeyboardEvent} e
+     * @param {SweetAlertOptions} innerParams
+     */
+
+
+    const handleEnter = (instance, e, innerParams) => {
+        // https://github.com/sweetalert2/sweetalert2/issues/2386
+        if (!callIfFunction(innerParams.allowEnterKey)) {
+            return;
+        }
+
+        if (e.target && instance.getInput() && e.target instanceof HTMLElement && e.target.outerHTML === instance.getInput().outerHTML) {
+            if (['textarea', 'file'].includes(innerParams.input)) {
+                return; // do not submit
+            }
+
+            clickConfirm();
+            e.preventDefault();
+        }
+    };
+    /**
+     * @param {KeyboardEvent} e
+     * @param {SweetAlertOptions} innerParams
+     */
+
+
+    const handleTab = (e, innerParams) => {
+        const targetElement = e.target;
+        const focusableElements = getFocusableElements();
+        let btnIndex = -1;
+
+        for (let i = 0; i < focusableElements.length; i++) {
+            if (targetElement === focusableElements[i]) {
+                btnIndex = i;
+                break;
+            }
+        } // Cycle to the next button
+
+
+        if (!e.shiftKey) {
+            setFocus(innerParams, btnIndex, 1);
+        } // Cycle to the prev button
+        else {
+            setFocus(innerParams, btnIndex, -1);
+        }
+
+        e.stopPropagation();
+        e.preventDefault();
+    };
+    /**
+     * @param {string} key
+     */
+
+
+    const handleArrows = key => {
+        const confirmButton = getConfirmButton();
+        const denyButton = getDenyButton();
+        const cancelButton = getCancelButton();
+
+        if (document.activeElement instanceof HTMLElement && ![confirmButton, denyButton, cancelButton].includes(document.activeElement)) {
+            return;
+        }
+
+        const sibling = arrowKeysNextButton.includes(key) ? 'nextElementSibling' : 'previousElementSibling';
+        let buttonToFocus = document.activeElement;
+
+        for (let i = 0; i < getActions().children.length; i++) {
+            buttonToFocus = buttonToFocus[sibling];
+
+            if (!buttonToFocus) {
+                return;
+            }
+
+            if (buttonToFocus instanceof HTMLButtonElement && isVisible(buttonToFocus)) {
+                break;
+            }
+        }
+
+        if (buttonToFocus instanceof HTMLButtonElement) {
+            buttonToFocus.focus();
+        }
+    };
+    /**
+     * @param {KeyboardEvent} e
+     * @param {SweetAlertOptions} innerParams
+     * @param {function} dismissWith
+     */
+
+
+    const handleEsc = (e, innerParams, dismissWith) => {
+        if (callIfFunction(innerParams.allowEscapeKey)) {
+            e.preventDefault();
+            dismissWith(DismissReason.esc);
+        }
+    };
+
+    /**
+     * This module contains `WeakMap`s for each effectively-"private  property" that a `Swal` has.
+     * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
+     * This is the approach that Babel will probably take to implement private methods/fields
+     *   https://github.com/tc39/proposal-private-methods
+     *   https://github.com/babel/babel/pull/7555
+     * Once we have the changes from that PR in Babel, and our core class fits reasonable in *one module*
+     *   then we can use that language feature.
+     */
+    var privateMethods = {
+        swalPromiseResolve: new WeakMap(),
+        swalPromiseReject: new WeakMap()
+    };
+
+    // Adding aria-hidden="true" to elements outside of the active modal dialog ensures that
+    // elements not within the active modal dialog will not be surfaced if a user opens a screen
+    // reader’s list of elements (headings, form controls, landmarks, etc.) in the document.
+
+    const setAriaHidden = () => {
+        const bodyChildren = Array.from(document.body.children);
+        bodyChildren.forEach(el => {
+            if (el === getContainer() || el.contains(getContainer())) {
+                return;
+            }
+
+            if (el.hasAttribute('aria-hidden')) {
+                el.setAttribute('data-previous-aria-hidden', el.getAttribute('aria-hidden'));
+            }
+
+            el.setAttribute('aria-hidden', 'true');
+        });
+    };
+    const unsetAriaHidden = () => {
+        const bodyChildren = Array.from(document.body.children);
+        bodyChildren.forEach(el => {
+            if (el.hasAttribute('data-previous-aria-hidden')) {
+                el.setAttribute('aria-hidden', el.getAttribute('data-previous-aria-hidden'));
+                el.removeAttribute('data-previous-aria-hidden');
+            } else {
+                el.removeAttribute('aria-hidden');
+            }
+        });
+    };
+
+    /* istanbul ignore file */
+
+    const iOSfix = () => {
+        const iOS = // @ts-ignore
+            /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+        if (iOS && !hasClass(document.body, swalClasses.iosfix)) {
+            const offset = document.body.scrollTop;
+            document.body.style.top = "".concat(offset * -1, "px");
+            addClass(document.body, swalClasses.iosfix);
+            lockBodyScroll();
+            addBottomPaddingForTallPopups();
+        }
+    };
+    /**
+     * https://github.com/sweetalert2/sweetalert2/issues/1948
+     */
+
+    const addBottomPaddingForTallPopups = () => {
+        const ua = navigator.userAgent;
+        const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+        const webkit = !!ua.match(/WebKit/i);
+        const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+
+        if (iOSSafari) {
+            const bottomPanelHeight = 44;
+
+            if (getPopup().scrollHeight > window.innerHeight - bottomPanelHeight) {
+                getContainer().style.paddingBottom = "".concat(bottomPanelHeight, "px");
+            }
+        }
+    };
+    /**
+     * https://github.com/sweetalert2/sweetalert2/issues/1246
+     */
+
+
+    const lockBodyScroll = () => {
+        const container = getContainer();
+        let preventTouchMove;
+        /**
+         * @param {TouchEvent} e
+         */
+
+        container.ontouchstart = e => {
+            preventTouchMove = shouldPreventTouchMove(e);
+        };
+        /**
+         * @param {TouchEvent} e
+         */
+
+
+        container.ontouchmove = e => {
+            if (preventTouchMove) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+    };
+    /**
+     * @param {TouchEvent} event
+     * @returns {boolean}
+     */
+
+
+    const shouldPreventTouchMove = event => {
+        const target = event.target;
+        const container = getContainer();
+
+        if (isStylus(event) || isZoom(event)) {
+            return false;
+        }
+
+        if (target === container) {
+            return true;
+        }
+
+        if (!isScrollable(container) && target instanceof HTMLElement && target.tagName !== 'INPUT' && // #1603
+            target.tagName !== 'TEXTAREA' && // #2266
+            !(isScrollable(getHtmlContainer()) && // #1944
+                getHtmlContainer().contains(target))) {
+            return true;
+        }
+
+        return false;
+    };
+    /**
+     * https://github.com/sweetalert2/sweetalert2/issues/1786
+     *
+     * @param {*} event
+     * @returns {boolean}
+     */
+
+
+    const isStylus = event => {
+        return event.touches && event.touches.length && event.touches[0].touchType === 'stylus';
+    };
+    /**
+     * https://github.com/sweetalert2/sweetalert2/issues/1891
+     *
+     * @param {TouchEvent} event
+     * @returns {boolean}
+     */
+
+
+    const isZoom = event => {
+        return event.touches && event.touches.length > 1;
+    };
+
+    const undoIOSfix = () => {
+        if (hasClass(document.body, swalClasses.iosfix)) {
+            const offset = parseInt(document.body.style.top, 10);
+            removeClass(document.body, swalClasses.iosfix);
+            document.body.style.top = '';
+            document.body.scrollTop = offset * -1;
+        }
+    };
+
+    const fixScrollbar = () => {
+        // for queues, do not do this more than once
+        if (states.previousBodyPadding !== null) {
+            return;
+        } // if the body has overflow
+
+
+        if (document.body.scrollHeight > window.innerHeight) {
+            // add padding so the content doesn't shift after removal of scrollbar
+            states.previousBodyPadding = parseInt(window.getComputedStyle(document.body).getPropertyValue('padding-right'));
+            document.body.style.paddingRight = "".concat(states.previousBodyPadding + measureScrollbar(), "px");
+        }
+    };
+    const undoScrollbar = () => {
+        if (states.previousBodyPadding !== null) {
+            document.body.style.paddingRight = "".concat(states.previousBodyPadding, "px");
+            states.previousBodyPadding = null;
+        }
+    };
+
+    /*
+     * Instance method to close sweetAlert
+     */
+
+    function removePopupAndResetState(instance, container, returnFocus, didClose) {
+        if (isToast()) {
+            triggerDidCloseAndDispose(instance, didClose);
+        } else {
+            restoreActiveElement(returnFocus).then(() => triggerDidCloseAndDispose(instance, didClose));
+            removeKeydownHandler(globalState);
+        }
+
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // workaround for #2088
+        // for some reason removing the container in Safari will scroll the document to bottom
+
+        if (isSafari) {
+            container.setAttribute('style', 'display:none !important');
+            container.removeAttribute('class');
+            container.innerHTML = '';
+        } else {
+            container.remove();
+        }
+
+        if (isModal()) {
+            undoScrollbar();
+            undoIOSfix();
+            unsetAriaHidden();
+        }
+
+        removeBodyClasses();
+    }
+
+    function removeBodyClasses() {
+        removeClass([document.documentElement, document.body], [swalClasses.shown, swalClasses['height-auto'], swalClasses['no-backdrop'], swalClasses['toast-shown']]);
+    }
+
+    function close(resolveValue) {
+        resolveValue = prepareResolveValue(resolveValue);
+        const swalPromiseResolve = privateMethods.swalPromiseResolve.get(this);
+        const didClose = triggerClosePopup(this);
+
+        if (this.isAwaitingPromise()) {
+            // A swal awaiting for a promise (after a click on Confirm or Deny) cannot be dismissed anymore #2335
+            if (!resolveValue.isDismissed) {
+                handleAwaitingPromise(this);
+                swalPromiseResolve(resolveValue);
+            }
+        } else if (didClose) {
+            // Resolve Swal promise
+            swalPromiseResolve(resolveValue);
+        }
+    }
+    function isAwaitingPromise() {
+        return !!privateProps.awaitingPromise.get(this);
+    }
+
+    const triggerClosePopup = instance => {
+        const popup = getPopup();
+
+        if (!popup) {
+            return false;
+        }
+
+        const innerParams = privateProps.innerParams.get(instance);
+
+        if (!innerParams || hasClass(popup, innerParams.hideClass.popup)) {
+            return false;
+        }
+
+        removeClass(popup, innerParams.showClass.popup);
+        addClass(popup, innerParams.hideClass.popup);
+        const backdrop = getContainer();
+        removeClass(backdrop, innerParams.showClass.backdrop);
+        addClass(backdrop, innerParams.hideClass.backdrop);
+        handlePopupAnimation(instance, popup, innerParams);
+        return true;
+    };
+
+    function rejectPromise(error) {
+        const rejectPromise = privateMethods.swalPromiseReject.get(this);
+        handleAwaitingPromise(this);
+
+        if (rejectPromise) {
+            // Reject Swal promise
+            rejectPromise(error);
+        }
+    }
+    const handleAwaitingPromise = instance => {
+        if (instance.isAwaitingPromise()) {
+            privateProps.awaitingPromise.delete(instance); // The instance might have been previously partly destroyed, we must resume the destroy process in this case #2335
+
+            if (!privateProps.innerParams.get(instance)) {
+                instance._destroy();
+            }
+        }
+    };
+
+    const prepareResolveValue = resolveValue => {
+        // When user calls Swal.close()
+        if (typeof resolveValue === 'undefined') {
+            return {
+                isConfirmed: false,
+                isDenied: false,
+                isDismissed: true
+            };
+        }
+
+        return Object.assign({
+            isConfirmed: false,
+            isDenied: false,
+            isDismissed: false
+        }, resolveValue);
+    };
+
+    const handlePopupAnimation = (instance, popup, innerParams) => {
+        const container = getContainer(); // If animation is supported, animate
+
+        const animationIsSupported = animationEndEvent && hasCssAnimation(popup);
+
+        if (typeof innerParams.willClose === 'function') {
+            innerParams.willClose(popup);
+        }
+
+        if (animationIsSupported) {
+            animatePopup(instance, popup, container, innerParams.returnFocus, innerParams.didClose);
+        } else {
+            // Otherwise, remove immediately
+            removePopupAndResetState(instance, container, innerParams.returnFocus, innerParams.didClose);
+        }
+    };
+
+    const animatePopup = (instance, popup, container, returnFocus, didClose) => {
+        globalState.swalCloseEventFinishedCallback = removePopupAndResetState.bind(null, instance, container, returnFocus, didClose);
+        popup.addEventListener(animationEndEvent, function (e) {
+            if (e.target === popup) {
+                globalState.swalCloseEventFinishedCallback();
+                delete globalState.swalCloseEventFinishedCallback;
+            }
+        });
+    };
+
+    const triggerDidCloseAndDispose = (instance, didClose) => {
+        setTimeout(() => {
+            if (typeof didClose === 'function') {
+                didClose.bind(instance.params)();
+            }
+
+            instance._destroy();
+        });
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     * @param {string[]} buttons
+     * @param {boolean} disabled
+     */
+
+    function setButtonsDisabled(instance, buttons, disabled) {
+        const domCache = privateProps.domCache.get(instance);
+        buttons.forEach(button => {
+            domCache[button].disabled = disabled;
+        });
+    }
+    /**
+     * @param {HTMLInputElement} input
+     * @param {boolean} disabled
+     */
+
+
+    function setInputDisabled(input, disabled) {
+        if (!input) {
+            return;
+        }
+
+        if (input.type === 'radio') {
+            const radiosContainer = input.parentNode.parentNode;
+            const radios = radiosContainer.querySelectorAll('input');
+
+            for (let i = 0; i < radios.length; i++) {
+                radios[i].disabled = disabled;
+            }
+        } else {
+            input.disabled = disabled;
+        }
+    }
+
+    function enableButtons() {
+        setButtonsDisabled(this, ['confirmButton', 'denyButton', 'cancelButton'], false);
+    }
+    function disableButtons() {
+        setButtonsDisabled(this, ['confirmButton', 'denyButton', 'cancelButton'], true);
+    }
+    function enableInput() {
+        setInputDisabled(this.getInput(), false);
+    }
+    function disableInput() {
+        setInputDisabled(this.getInput(), true);
+    }
+
+    function showValidationMessage(error) {
+        const domCache = privateProps.domCache.get(this);
+        const params = privateProps.innerParams.get(this);
+        setInnerHtml(domCache.validationMessage, error);
+        domCache.validationMessage.className = swalClasses['validation-message'];
+
+        if (params.customClass && params.customClass.validationMessage) {
+            addClass(domCache.validationMessage, params.customClass.validationMessage);
+        }
+
+        show(domCache.validationMessage);
+        const input = this.getInput();
+
+        if (input) {
+            input.setAttribute('aria-invalid', true);
+            input.setAttribute('aria-describedby', swalClasses['validation-message']);
+            focusInput(input);
+            addClass(input, swalClasses.inputerror);
+        }
+    } // Hide block with validation message
+
+    function resetValidationMessage$1() {
+        const domCache = privateProps.domCache.get(this);
+
+        if (domCache.validationMessage) {
+            hide(domCache.validationMessage);
+        }
+
+        const input = this.getInput();
+
+        if (input) {
+            input.removeAttribute('aria-invalid');
+            input.removeAttribute('aria-describedby');
+            removeClass(input, swalClasses.inputerror);
+        }
+    }
+
+    function getProgressSteps$1() {
+        const domCache = privateProps.domCache.get(this);
+        return domCache.progressSteps;
+    }
+
+    const defaultParams = {
+        title: '',
+        titleText: '',
+        text: '',
+        html: '',
+        footer: '',
+        icon: undefined,
+        iconColor: undefined,
+        iconHtml: undefined,
+        template: undefined,
+        toast: false,
+        showClass: {
+            popup: 'swal2-show',
+            backdrop: 'swal2-backdrop-show',
+            icon: 'swal2-icon-show'
+        },
+        hideClass: {
+            popup: 'swal2-hide',
+            backdrop: 'swal2-backdrop-hide',
+            icon: 'swal2-icon-hide'
+        },
+        customClass: {},
+        target: 'body',
+        color: undefined,
+        backdrop: true,
+        heightAuto: true,
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        allowEnterKey: true,
+        stopKeydownPropagation: true,
+        keydownListenerCapture: false,
+        showConfirmButton: true,
+        showDenyButton: false,
+        showCancelButton: false,
+        preConfirm: undefined,
+        preDeny: undefined,
+        confirmButtonText: 'OK',
+        confirmButtonAriaLabel: '',
+        confirmButtonColor: undefined,
+        denyButtonText: 'No',
+        denyButtonAriaLabel: '',
+        denyButtonColor: undefined,
+        cancelButtonText: 'Cancel',
+        cancelButtonAriaLabel: '',
+        cancelButtonColor: undefined,
+        buttonsStyling: true,
+        reverseButtons: false,
+        focusConfirm: true,
+        focusDeny: false,
+        focusCancel: false,
+        returnFocus: true,
+        showCloseButton: false,
+        closeButtonHtml: '&times;',
+        closeButtonAriaLabel: 'Close this dialog',
+        loaderHtml: '',
+        showLoaderOnConfirm: false,
+        showLoaderOnDeny: false,
+        imageUrl: undefined,
+        imageWidth: undefined,
+        imageHeight: undefined,
+        imageAlt: '',
+        timer: undefined,
+        timerProgressBar: false,
+        width: undefined,
+        padding: undefined,
+        background: undefined,
+        input: undefined,
+        inputPlaceholder: '',
+        inputLabel: '',
+        inputValue: '',
+        inputOptions: {},
+        inputAutoTrim: true,
+        inputAttributes: {},
+        inputValidator: undefined,
+        returnInputValueOnDeny: false,
+        validationMessage: undefined,
+        grow: false,
+        position: 'center',
+        progressSteps: [],
+        currentProgressStep: undefined,
+        progressStepsDistance: undefined,
+        willOpen: undefined,
+        didOpen: undefined,
+        didRender: undefined,
+        willClose: undefined,
+        didClose: undefined,
+        didDestroy: undefined,
+        scrollbarPadding: true
+    };
+    const updatableParams = ['allowEscapeKey', 'allowOutsideClick', 'background', 'buttonsStyling', 'cancelButtonAriaLabel', 'cancelButtonColor', 'cancelButtonText', 'closeButtonAriaLabel', 'closeButtonHtml', 'color', 'confirmButtonAriaLabel', 'confirmButtonColor', 'confirmButtonText', 'currentProgressStep', 'customClass', 'denyButtonAriaLabel', 'denyButtonColor', 'denyButtonText', 'didClose', 'didDestroy', 'footer', 'hideClass', 'html', 'icon', 'iconColor', 'iconHtml', 'imageAlt', 'imageHeight', 'imageUrl', 'imageWidth', 'preConfirm', 'preDeny', 'progressSteps', 'returnFocus', 'reverseButtons', 'showCancelButton', 'showCloseButton', 'showConfirmButton', 'showDenyButton', 'text', 'title', 'titleText', 'willClose'];
+    const deprecatedParams = {};
+    const toastIncompatibleParams = ['allowOutsideClick', 'allowEnterKey', 'backdrop', 'focusConfirm', 'focusDeny', 'focusCancel', 'returnFocus', 'heightAuto', 'keydownListenerCapture'];
+    /**
+     * Is valid parameter
+     *
+     * @param {string} paramName
+     * @returns {boolean}
+     */
+
+    const isValidParameter = paramName => {
+        return Object.prototype.hasOwnProperty.call(defaultParams, paramName);
+    };
+    /**
+     * Is valid parameter for Swal.update() method
+     *
+     * @param {string} paramName
+     * @returns {boolean}
+     */
+
+    const isUpdatableParameter = paramName => {
+        return updatableParams.indexOf(paramName) !== -1;
+    };
+    /**
+     * Is deprecated parameter
+     *
+     * @param {string} paramName
+     * @returns {string | undefined}
+     */
+
+    const isDeprecatedParameter = paramName => {
+        return deprecatedParams[paramName];
+    };
+    /**
+     * @param {string} param
+     */
+
+    const checkIfParamIsValid = param => {
+        if (!isValidParameter(param)) {
+            warn("Unknown parameter \"".concat(param, "\""));
+        }
+    };
+    /**
+     * @param {string} param
+     */
+
+
+    const checkIfToastParamIsValid = param => {
+        if (toastIncompatibleParams.includes(param)) {
+            warn("The parameter \"".concat(param, "\" is incompatible with toasts"));
+        }
+    };
+    /**
+     * @param {string} param
+     */
+
+
+    const checkIfParamIsDeprecated = param => {
+        if (isDeprecatedParameter(param)) {
+            warnAboutDeprecation(param, isDeprecatedParameter(param));
+        }
+    };
+    /**
+     * Show relevant warnings for given params
+     *
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const showWarningsForParams = params => {
+        if (!params.backdrop && params.allowOutsideClick) {
+            warn('"allowOutsideClick" parameter requires `backdrop` parameter to be set to `true`');
+        }
+
+        for (const param in params) {
+            checkIfParamIsValid(param);
+
+            if (params.toast) {
+                checkIfToastParamIsValid(param);
+            }
+
+            checkIfParamIsDeprecated(param);
+        }
+    };
+
+    /**
+     * Updates popup parameters.
+     */
+
+    function update(params) {
+        const popup = getPopup();
+        const innerParams = privateProps.innerParams.get(this);
+
+        if (!popup || hasClass(popup, innerParams.hideClass.popup)) {
+            return warn("You're trying to update the closed or closing popup, that won't work. Use the update() method in preConfirm parameter or show a new popup.");
+        }
+
+        const validUpdatableParams = filterValidParams(params);
+        const updatedParams = Object.assign({}, innerParams, validUpdatableParams);
+        render(this, updatedParams);
+        privateProps.innerParams.set(this, updatedParams);
+        Object.defineProperties(this, {
+            params: {
+                value: Object.assign({}, this.params, params),
+                writable: false,
+                enumerable: true
+            }
+        });
+    }
+
+    const filterValidParams = params => {
+        const validUpdatableParams = {};
+        Object.keys(params).forEach(param => {
+            if (isUpdatableParameter(param)) {
+                validUpdatableParams[param] = params[param];
+            } else {
+                warn("Invalid parameter to update: ".concat(param));
+            }
+        });
+        return validUpdatableParams;
+    };
+
+    function _destroy() {
+        const domCache = privateProps.domCache.get(this);
+        const innerParams = privateProps.innerParams.get(this);
+
+        if (!innerParams) {
+            disposeWeakMaps(this); // The WeakMaps might have been partly destroyed, we must recall it to dispose any remaining WeakMaps #2335
+
+            return; // This instance has already been destroyed
+        } // Check if there is another Swal closing
+
+
+        if (domCache.popup && globalState.swalCloseEventFinishedCallback) {
+            globalState.swalCloseEventFinishedCallback();
+            delete globalState.swalCloseEventFinishedCallback;
+        }
+
+        if (typeof innerParams.didDestroy === 'function') {
+            innerParams.didDestroy();
+        }
+
+        disposeSwal(this);
+    }
+    /**
+     * @param {SweetAlert2} instance
+     */
+
+    const disposeSwal = instance => {
+        disposeWeakMaps(instance); // Unset this.params so GC will dispose it (#1569)
+        // @ts-ignore
+
+        delete instance.params; // Unset globalState props so GC will dispose globalState (#1569)
+
+        delete globalState.keydownHandler;
+        delete globalState.keydownTarget; // Unset currentInstance
+
+        delete globalState.currentInstance;
+    };
+    /**
+     * @param {SweetAlert2} instance
+     */
+
+
+    const disposeWeakMaps = instance => {
+        // If the current instance is awaiting a promise result, we keep the privateMethods to call them once the promise result is retrieved #2335
+        // @ts-ignore
+        if (instance.isAwaitingPromise()) {
+            unsetWeakMaps(privateProps, instance);
+            privateProps.awaitingPromise.set(instance, true);
+        } else {
+            unsetWeakMaps(privateMethods, instance);
+            unsetWeakMaps(privateProps, instance);
+        }
+    };
+    /**
+     * @param {object} obj
+     * @param {SweetAlert2} instance
+     */
+
+
+    const unsetWeakMaps = (obj, instance) => {
+        for (const i in obj) {
+            obj[i].delete(instance);
+        }
+    };
+
+
+
+    var instanceMethods = /*#__PURE__*/Object.freeze({
+        hideLoading: hideLoading,
+        disableLoading: hideLoading,
+        getInput: getInput$1,
+        close: close,
+        isAwaitingPromise: isAwaitingPromise,
+        rejectPromise: rejectPromise,
+        handleAwaitingPromise: handleAwaitingPromise,
+        closePopup: close,
+        closeModal: close,
+        closeToast: close,
+        enableButtons: enableButtons,
+        disableButtons: disableButtons,
+        enableInput: enableInput,
+        disableInput: disableInput,
+        showValidationMessage: showValidationMessage,
+        resetValidationMessage: resetValidationMessage$1,
+        getProgressSteps: getProgressSteps$1,
+        update: update,
+        _destroy: _destroy
+    });
+
+    /**
+     * Shows loader (spinner), this is useful with AJAX requests.
+     * By default the loader be shown instead of the "Confirm" button.
+     */
+
+    const showLoading = buttonToReplace => {
+        let popup = getPopup();
+
+        if (!popup) {
+            new Swal(); // eslint-disable-line no-new
+        }
+
+        popup = getPopup();
+        const loader = getLoader();
+
+        if (isToast()) {
+            hide(getIcon());
+        } else {
+            replaceButton(popup, buttonToReplace);
+        }
+
+        show(loader);
+        popup.setAttribute('data-loading', 'true');
+        popup.setAttribute('aria-busy', 'true');
+        popup.focus();
+    };
+
+    const replaceButton = (popup, buttonToReplace) => {
+        const actions = getActions();
+        const loader = getLoader();
+
+        if (!buttonToReplace && isVisible(getConfirmButton())) {
+            buttonToReplace = getConfirmButton();
+        }
+
+        show(actions);
+
+        if (buttonToReplace) {
+            hide(buttonToReplace);
+            loader.setAttribute('data-button-to-replace', buttonToReplace.className);
+        }
+
+        loader.parentNode.insertBefore(loader, buttonToReplace);
+        addClass([popup, actions], swalClasses.loading);
+    };
+
+    const handleInputOptionsAndValue = (instance, params) => {
+        if (params.input === 'select' || params.input === 'radio') {
+            handleInputOptions(instance, params);
+        } else if (['text', 'email', 'number', 'tel', 'textarea'].includes(params.input) && (hasToPromiseFn(params.inputValue) || isPromise(params.inputValue))) {
+            showLoading(getConfirmButton());
+            handleInputValue(instance, params);
+        }
+    };
+    const getInputValue = (instance, innerParams) => {
+        const input = instance.getInput();
+
+        if (!input) {
+            return null;
+        }
+
+        switch (innerParams.input) {
+            case 'checkbox':
+                return getCheckboxValue(input);
+
+            case 'radio':
+                return getRadioValue(input);
+
+            case 'file':
+                return getFileValue(input);
+
+            default:
+                return innerParams.inputAutoTrim ? input.value.trim() : input.value;
+        }
+    };
+
+    const getCheckboxValue = input => input.checked ? 1 : 0;
+
+    const getRadioValue = input => input.checked ? input.value : null;
+
+    const getFileValue = input => input.files.length ? input.getAttribute('multiple') !== null ? input.files : input.files[0] : null;
+
+    const handleInputOptions = (instance, params) => {
+        const popup = getPopup();
+
+        const processInputOptions = inputOptions => populateInputOptions[params.input](popup, formatInputOptions(inputOptions), params);
+
+        if (hasToPromiseFn(params.inputOptions) || isPromise(params.inputOptions)) {
+            showLoading(getConfirmButton());
+            asPromise(params.inputOptions).then(inputOptions => {
+                instance.hideLoading();
+                processInputOptions(inputOptions);
+            });
+        } else if (typeof params.inputOptions === 'object') {
+            processInputOptions(params.inputOptions);
+        } else {
+            error("Unexpected type of inputOptions! Expected object, Map or Promise, got ".concat(typeof params.inputOptions));
+        }
+    };
+
+    const handleInputValue = (instance, params) => {
+        const input = instance.getInput();
+        hide(input);
+        asPromise(params.inputValue).then(inputValue => {
+            input.value = params.input === 'number' ? parseFloat(inputValue) || 0 : "".concat(inputValue);
+            show(input);
+            input.focus();
+            instance.hideLoading();
+        }).catch(err => {
+            error("Error in inputValue promise: ".concat(err));
+            input.value = '';
+            show(input);
+            input.focus();
+            instance.hideLoading();
+        });
+    };
+
+    const populateInputOptions = {
+        select: (popup, inputOptions, params) => {
+            const select = getDirectChildByClass(popup, swalClasses.select);
+
+            const renderOption = (parent, optionLabel, optionValue) => {
+                const option = document.createElement('option');
+                option.value = optionValue;
+                setInnerHtml(option, optionLabel);
+                option.selected = isSelected(optionValue, params.inputValue);
+                parent.appendChild(option);
+            };
+
+            inputOptions.forEach(inputOption => {
+                const optionValue = inputOption[0];
+                const optionLabel = inputOption[1]; // <optgroup> spec:
+                // https://www.w3.org/TR/html401/interact/forms.html#h-17.6
+                // "...all OPTGROUP elements must be specified directly within a SELECT element (i.e., groups may not be nested)..."
+                // check whether this is a <optgroup>
+
+                if (Array.isArray(optionLabel)) {
+                    // if it is an array, then it is an <optgroup>
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = optionValue;
+                    optgroup.disabled = false; // not configurable for now
+
+                    select.appendChild(optgroup);
+                    optionLabel.forEach(o => renderOption(optgroup, o[1], o[0]));
+                } else {
+                    // case of <option>
+                    renderOption(select, optionLabel, optionValue);
+                }
+            });
+            select.focus();
+        },
+        radio: (popup, inputOptions, params) => {
+            const radio = getDirectChildByClass(popup, swalClasses.radio);
+            inputOptions.forEach(inputOption => {
+                const radioValue = inputOption[0];
+                const radioLabel = inputOption[1];
+                const radioInput = document.createElement('input');
+                const radioLabelElement = document.createElement('label');
+                radioInput.type = 'radio';
+                radioInput.name = swalClasses.radio;
+                radioInput.value = radioValue;
+
+                if (isSelected(radioValue, params.inputValue)) {
+                    radioInput.checked = true;
+                }
+
+                const label = document.createElement('span');
+                setInnerHtml(label, radioLabel);
+                label.className = swalClasses.label;
+                radioLabelElement.appendChild(radioInput);
+                radioLabelElement.appendChild(label);
+                radio.appendChild(radioLabelElement);
+            });
+            const radios = radio.querySelectorAll('input');
+
+            if (radios.length) {
+                radios[0].focus();
+            }
+        }
+    };
+    /**
+     * Converts `inputOptions` into an array of `[value, label]`s
+     * @param inputOptions
+     */
+
+    const formatInputOptions = inputOptions => {
+        const result = [];
+
+        if (typeof Map !== 'undefined' && inputOptions instanceof Map) {
+            inputOptions.forEach((value, key) => {
+                let valueFormatted = value;
+
+                if (typeof valueFormatted === 'object') {
+                    // case of <optgroup>
+                    valueFormatted = formatInputOptions(valueFormatted);
+                }
+
+                result.push([key, valueFormatted]);
+            });
+        } else {
+            Object.keys(inputOptions).forEach(key => {
+                let valueFormatted = inputOptions[key];
+
+                if (typeof valueFormatted === 'object') {
+                    // case of <optgroup>
+                    valueFormatted = formatInputOptions(valueFormatted);
+                }
+
+                result.push([key, valueFormatted]);
+            });
+        }
+
+        return result;
+    };
+
+    const isSelected = (optionValue, inputValue) => {
+        return inputValue && inputValue.toString() === optionValue.toString();
+    };
+
+    /**
+     * @param {SweetAlert2} instance
+     */
+
+    const handleConfirmButtonClick = instance => {
+        const innerParams = privateProps.innerParams.get(instance);
+        instance.disableButtons();
+
+        if (innerParams.input) {
+            handleConfirmOrDenyWithInput(instance, 'confirm');
+        } else {
+            confirm(instance, true);
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     */
+
+    const handleDenyButtonClick = instance => {
+        const innerParams = privateProps.innerParams.get(instance);
+        instance.disableButtons();
+
+        if (innerParams.returnInputValueOnDeny) {
+            handleConfirmOrDenyWithInput(instance, 'deny');
+        } else {
+            deny(instance, false);
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {Function} dismissWith
+     */
+
+    const handleCancelButtonClick = (instance, dismissWith) => {
+        instance.disableButtons();
+        dismissWith(DismissReason.cancel);
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {'confirm' | 'deny'} type
+     */
+
+    const handleConfirmOrDenyWithInput = (instance, type) => {
+        const innerParams = privateProps.innerParams.get(instance);
+
+        if (!innerParams.input) {
+            error("The \"input\" parameter is needed to be set when using returnInputValueOn".concat(capitalizeFirstLetter(type)));
+            return;
+        }
+
+        const inputValue = getInputValue(instance, innerParams);
+
+        if (innerParams.inputValidator) {
+            handleInputValidator(instance, inputValue, type);
+        } else if (!instance.getInput().checkValidity()) {
+            instance.enableButtons();
+            instance.showValidationMessage(innerParams.validationMessage);
+        } else if (type === 'deny') {
+            deny(instance, inputValue);
+        } else {
+            confirm(instance, inputValue);
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {string} inputValue
+     * @param {'confirm' | 'deny'} type
+     */
+
+
+    const handleInputValidator = (instance, inputValue, type) => {
+        const innerParams = privateProps.innerParams.get(instance);
+        instance.disableInput();
+        const validationPromise = Promise.resolve().then(() => asPromise(innerParams.inputValidator(inputValue, innerParams.validationMessage)));
+        validationPromise.then(validationMessage => {
+            instance.enableButtons();
+            instance.enableInput();
+
+            if (validationMessage) {
+                instance.showValidationMessage(validationMessage);
+            } else if (type === 'deny') {
+                deny(instance, inputValue);
+            } else {
+                confirm(instance, inputValue);
+            }
+        });
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {any} value
+     */
+
+
+    const deny = (instance, value) => {
+        const innerParams = privateProps.innerParams.get(instance || undefined);
+
+        if (innerParams.showLoaderOnDeny) {
+            showLoading(getDenyButton());
+        }
+
+        if (innerParams.preDeny) {
+            privateProps.awaitingPromise.set(instance || undefined, true); // Flagging the instance as awaiting a promise so it's own promise's reject/resolve methods doesn't get destroyed until the result from this preDeny's promise is received
+
+            const preDenyPromise = Promise.resolve().then(() => asPromise(innerParams.preDeny(value, innerParams.validationMessage)));
+            preDenyPromise.then(preDenyValue => {
+                if (preDenyValue === false) {
+                    instance.hideLoading();
+                    handleAwaitingPromise(instance);
+                } else {
+                    instance.close({
+                        isDenied: true,
+                        value: typeof preDenyValue === 'undefined' ? value : preDenyValue
+                    });
+                }
+            }).catch(error$$1 => rejectWith(instance || undefined, error$$1));
+        } else {
+            instance.close({
+                isDenied: true,
+                value
+            });
+        }
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @param {any} value
+     */
+
+
+    const succeedWith = (instance, value) => {
+        instance.close({
+            isConfirmed: true,
+            value
+        });
+    };
+    /**
+     *
+     * @param {SweetAlert2} instance
+     * @param {string} error
+     */
+
+
+    const rejectWith = (instance, error$$1) => {
+        // @ts-ignore
+        instance.rejectPromise(error$$1);
+    };
+    /**
+     *
+     * @param {SweetAlert2} instance
+     * @param {any} value
+     */
+
+
+    const confirm = (instance, value) => {
+        const innerParams = privateProps.innerParams.get(instance || undefined);
+
+        if (innerParams.showLoaderOnConfirm) {
+            showLoading();
+        }
+
+        if (innerParams.preConfirm) {
+            instance.resetValidationMessage();
+            privateProps.awaitingPromise.set(instance || undefined, true); // Flagging the instance as awaiting a promise so it's own promise's reject/resolve methods doesn't get destroyed until the result from this preConfirm's promise is received
+
+            const preConfirmPromise = Promise.resolve().then(() => asPromise(innerParams.preConfirm(value, innerParams.validationMessage)));
+            preConfirmPromise.then(preConfirmValue => {
+                if (isVisible(getValidationMessage()) || preConfirmValue === false) {
+                    instance.hideLoading();
+                    handleAwaitingPromise(instance);
+                } else {
+                    succeedWith(instance, typeof preConfirmValue === 'undefined' ? value : preConfirmValue);
+                }
+            }).catch(error$$1 => rejectWith(instance || undefined, error$$1));
+        } else {
+            succeedWith(instance, value);
+        }
+    };
+
+    const handlePopupClick = (instance, domCache, dismissWith) => {
+        const innerParams = privateProps.innerParams.get(instance);
+
+        if (innerParams.toast) {
+            handleToastClick(instance, domCache, dismissWith);
+        } else {
+            // Ignore click events that had mousedown on the popup but mouseup on the container
+            // This can happen when the user drags a slider
+            handleModalMousedown(domCache); // Ignore click events that had mousedown on the container but mouseup on the popup
+
+            handleContainerMousedown(domCache);
+            handleModalClick(instance, domCache, dismissWith);
+        }
+    };
+
+    const handleToastClick = (instance, domCache, dismissWith) => {
+        // Closing toast by internal click
+        domCache.popup.onclick = () => {
+            const innerParams = privateProps.innerParams.get(instance);
+
+            if (innerParams && (isAnyButtonShown(innerParams) || innerParams.timer || innerParams.input)) {
+                return;
+            }
+
+            dismissWith(DismissReason.close);
+        };
+    };
+    /**
+     * @param {*} innerParams
+     * @returns {boolean}
+     */
+
+
+    const isAnyButtonShown = innerParams => {
+        return innerParams.showConfirmButton || innerParams.showDenyButton || innerParams.showCancelButton || innerParams.showCloseButton;
+    };
+
+    let ignoreOutsideClick = false;
+
+    const handleModalMousedown = domCache => {
+        domCache.popup.onmousedown = () => {
+            domCache.container.onmouseup = function (e) {
+                domCache.container.onmouseup = undefined; // We only check if the mouseup target is the container because usually it doesn't
+                // have any other direct children aside of the popup
+
+                if (e.target === domCache.container) {
+                    ignoreOutsideClick = true;
+                }
+            };
+        };
+    };
+
+    const handleContainerMousedown = domCache => {
+        domCache.container.onmousedown = () => {
+            domCache.popup.onmouseup = function (e) {
+                domCache.popup.onmouseup = undefined; // We also need to check if the mouseup target is a child of the popup
+
+                if (e.target === domCache.popup || domCache.popup.contains(e.target)) {
+                    ignoreOutsideClick = true;
+                }
+            };
+        };
+    };
+
+    const handleModalClick = (instance, domCache, dismissWith) => {
+        domCache.container.onclick = e => {
+            const innerParams = privateProps.innerParams.get(instance);
+
+            if (ignoreOutsideClick) {
+                ignoreOutsideClick = false;
+                return;
+            }
+
+            if (e.target === domCache.container && callIfFunction(innerParams.allowOutsideClick)) {
+                dismissWith(DismissReason.backdrop);
+            }
+        };
+    };
+
+    const isJqueryElement = elem => typeof elem === 'object' && elem.jquery;
+
+    const isElement = elem => elem instanceof Element || isJqueryElement(elem);
+
+    const argsToParams = args => {
+        const params = {};
+
+        if (typeof args[0] === 'object' && !isElement(args[0])) {
+            Object.assign(params, args[0]);
+        } else {
+            ['title', 'html', 'icon'].forEach((name, index) => {
+                const arg = args[index];
+
+                if (typeof arg === 'string' || isElement(arg)) {
+                    params[name] = arg;
+                } else if (arg !== undefined) {
+                    error("Unexpected type of ".concat(name, "! Expected \"string\" or \"Element\", got ").concat(typeof arg));
+                }
+            });
+        }
+
+        return params;
+    };
+
+    function fire() {
+        const Swal = this; // eslint-disable-line @typescript-eslint/no-this-alias
+
+        for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        return new Swal(...args);
+    }
+
+    /**
+     * Returns an extended version of `Swal` containing `params` as defaults.
+     * Useful for reusing Swal configuration.
+     *
+     * For example:
+     *
+     * Before:
+     * const textPromptOptions = { input: 'text', showCancelButton: true }
+     * const {value: firstName} = await Swal.fire({ ...textPromptOptions, title: 'What is your first name?' })
+     * const {value: lastName} = await Swal.fire({ ...textPromptOptions, title: 'What is your last name?' })
+     *
+     * After:
+     * const TextPrompt = Swal.mixin({ input: 'text', showCancelButton: true })
+     * const {value: firstName} = await TextPrompt('What is your first name?')
+     * const {value: lastName} = await TextPrompt('What is your last name?')
+     *
+     * @param mixinParams
+     */
+    function mixin(mixinParams) {
+        class MixinSwal extends this {
+            _main(params, priorityMixinParams) {
+                return super._main(params, Object.assign({}, mixinParams, priorityMixinParams));
+            }
+
+        }
+
+        return MixinSwal;
+    }
+
+    /**
+     * If `timer` parameter is set, returns number of milliseconds of timer remained.
+     * Otherwise, returns undefined.
+     */
+
+    const getTimerLeft = () => {
+        return globalState.timeout && globalState.timeout.getTimerLeft();
+    };
+    /**
+     * Stop timer. Returns number of milliseconds of timer remained.
+     * If `timer` parameter isn't set, returns undefined.
+     */
+
+    const stopTimer = () => {
+        if (globalState.timeout) {
+            stopTimerProgressBar();
+            return globalState.timeout.stop();
+        }
+    };
+    /**
+     * Resume timer. Returns number of milliseconds of timer remained.
+     * If `timer` parameter isn't set, returns undefined.
+     */
+
+    const resumeTimer = () => {
+        if (globalState.timeout) {
+            const remaining = globalState.timeout.start();
+            animateTimerProgressBar(remaining);
+            return remaining;
+        }
+    };
+    /**
+     * Resume timer. Returns number of milliseconds of timer remained.
+     * If `timer` parameter isn't set, returns undefined.
+     */
+
+    const toggleTimer = () => {
+        const timer = globalState.timeout;
+        return timer && (timer.running ? stopTimer() : resumeTimer());
+    };
+    /**
+     * Increase timer. Returns number of milliseconds of an updated timer.
+     * If `timer` parameter isn't set, returns undefined.
+     */
+
+    const increaseTimer = n => {
+        if (globalState.timeout) {
+            const remaining = globalState.timeout.increase(n);
+            animateTimerProgressBar(remaining, true);
+            return remaining;
+        }
+    };
+    /**
+     * Check if timer is running. Returns true if timer is running
+     * or false if timer is paused or stopped.
+     * If `timer` parameter isn't set, returns undefined
+     */
+
+    const isTimerRunning = () => {
+        return globalState.timeout && globalState.timeout.isRunning();
+    };
+
+    let bodyClickListenerAdded = false;
+    const clickHandlers = {};
+    function bindClickHandler() {
+        let attr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'data-swal-template';
+        clickHandlers[attr] = this;
+
+        if (!bodyClickListenerAdded) {
+            document.body.addEventListener('click', bodyClickListener);
+            bodyClickListenerAdded = true;
+        }
+    }
+
+    const bodyClickListener = event => {
+        for (let el = event.target; el && el !== document; el = el.parentNode) {
+            for (const attr in clickHandlers) {
+                const template = el.getAttribute(attr);
+
+                if (template) {
+                    clickHandlers[attr].fire({
+                        template
+                    });
+                    return;
+                }
+            }
+        }
+    };
+
+
+
+    var staticMethods = /*#__PURE__*/Object.freeze({
+        isValidParameter: isValidParameter,
+        isUpdatableParameter: isUpdatableParameter,
+        isDeprecatedParameter: isDeprecatedParameter,
+        argsToParams: argsToParams,
+        isVisible: isVisible$1,
+        clickConfirm: clickConfirm,
+        clickDeny: clickDeny,
+        clickCancel: clickCancel,
+        getContainer: getContainer,
+        getPopup: getPopup,
+        getTitle: getTitle,
+        getHtmlContainer: getHtmlContainer,
+        getImage: getImage,
+        getIcon: getIcon,
+        getInputLabel: getInputLabel,
+        getCloseButton: getCloseButton,
+        getActions: getActions,
+        getConfirmButton: getConfirmButton,
+        getDenyButton: getDenyButton,
+        getCancelButton: getCancelButton,
+        getLoader: getLoader,
+        getFooter: getFooter,
+        getTimerProgressBar: getTimerProgressBar,
+        getFocusableElements: getFocusableElements,
+        getValidationMessage: getValidationMessage,
+        isLoading: isLoading,
+        fire: fire,
+        mixin: mixin,
+        showLoading: showLoading,
+        enableLoading: showLoading,
+        getTimerLeft: getTimerLeft,
+        stopTimer: stopTimer,
+        resumeTimer: resumeTimer,
+        toggleTimer: toggleTimer,
+        increaseTimer: increaseTimer,
+        isTimerRunning: isTimerRunning,
+        bindClickHandler: bindClickHandler
+    });
+
+    class Timer {
+        /**
+         * @param {Function} callback
+         * @param {number} delay
+         */
+        constructor(callback, delay) {
+            this.callback = callback;
+            this.remaining = delay;
+            this.running = false;
+            this.start();
+        }
+
+        start() {
+            if (!this.running) {
+                this.running = true;
+                this.started = new Date();
+                this.id = setTimeout(this.callback, this.remaining);
+            }
+
+            return this.remaining;
+        }
+
+        stop() {
+            if (this.running) {
+                this.running = false;
+                clearTimeout(this.id);
+                this.remaining -= new Date().getTime() - this.started.getTime();
+            }
+
+            return this.remaining;
+        }
+
+        increase(n) {
+            const running = this.running;
+
+            if (running) {
+                this.stop();
+            }
+
+            this.remaining += n;
+
+            if (running) {
+                this.start();
+            }
+
+            return this.remaining;
+        }
+
+        getTimerLeft() {
+            if (this.running) {
+                this.stop();
+                this.start();
+            }
+
+            return this.remaining;
+        }
+
+        isRunning() {
+            return this.running;
+        }
+
+    }
+
+    const swalStringParams = ['swal-title', 'swal-html', 'swal-footer'];
+    /**
+     * @param {SweetAlertOptions} params
+     * @returns {SweetAlertOptions}
+     */
+
+    const getTemplateParams = params => {
+        /** @type {HTMLTemplateElement} */
+        const template = typeof params.template === 'string' ? document.querySelector(params.template) : params.template;
+
+        if (!template) {
+            return {};
+        }
+        /** @type {DocumentFragment} */
+
+
+        const templateContent = template.content;
+        showWarningsForElements(templateContent);
+        const result = Object.assign(getSwalParams(templateContent), getSwalButtons(templateContent), getSwalImage(templateContent), getSwalIcon(templateContent), getSwalInput(templateContent), getSwalStringParams(templateContent, swalStringParams));
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @returns {SweetAlertOptions}
+     */
+
+    const getSwalParams = templateContent => {
+        const result = {};
+        /** @type {HTMLElement[]} */
+
+        const swalParams = Array.from(templateContent.querySelectorAll('swal-param'));
+        swalParams.forEach(param => {
+            showWarningsForAttributes(param, ['name', 'value']);
+            const paramName = param.getAttribute('name');
+            const value = param.getAttribute('value');
+
+            if (typeof defaultParams[paramName] === 'boolean' && value === 'false') {
+                result[paramName] = false;
+            }
+
+            if (typeof defaultParams[paramName] === 'object') {
+                result[paramName] = JSON.parse(value);
+            }
+        });
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const getSwalButtons = templateContent => {
+        const result = {};
+        /** @type {HTMLElement[]} */
+
+        const swalButtons = Array.from(templateContent.querySelectorAll('swal-button'));
+        swalButtons.forEach(button => {
+            showWarningsForAttributes(button, ['type', 'color', 'aria-label']);
+            const type = button.getAttribute('type');
+            result["".concat(type, "ButtonText")] = button.innerHTML;
+            result["show".concat(capitalizeFirstLetter(type), "Button")] = true;
+
+            if (button.hasAttribute('color')) {
+                result["".concat(type, "ButtonColor")] = button.getAttribute('color');
+            }
+
+            if (button.hasAttribute('aria-label')) {
+                result["".concat(type, "ButtonAriaLabel")] = button.getAttribute('aria-label');
+            }
+        });
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const getSwalImage = templateContent => {
+        const result = {};
+        /** @type {HTMLElement} */
+
+        const image = templateContent.querySelector('swal-image');
+
+        if (image) {
+            showWarningsForAttributes(image, ['src', 'width', 'height', 'alt']);
+
+            if (image.hasAttribute('src')) {
+                result.imageUrl = image.getAttribute('src');
+            }
+
+            if (image.hasAttribute('width')) {
+                result.imageWidth = image.getAttribute('width');
+            }
+
+            if (image.hasAttribute('height')) {
+                result.imageHeight = image.getAttribute('height');
+            }
+
+            if (image.hasAttribute('alt')) {
+                result.imageAlt = image.getAttribute('alt');
+            }
+        }
+
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const getSwalIcon = templateContent => {
+        const result = {};
+        /** @type {HTMLElement} */
+
+        const icon = templateContent.querySelector('swal-icon');
+
+        if (icon) {
+            showWarningsForAttributes(icon, ['type', 'color']);
+
+            if (icon.hasAttribute('type')) {
+                /** @type {SweetAlertIcon} */
+                // @ts-ignore
+                result.icon = icon.getAttribute('type');
+            }
+
+            if (icon.hasAttribute('color')) {
+                result.iconColor = icon.getAttribute('color');
+            }
+
+            result.iconHtml = icon.innerHTML;
+        }
+
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const getSwalInput = templateContent => {
+        const result = {};
+        /** @type {HTMLElement} */
+
+        const input = templateContent.querySelector('swal-input');
+
+        if (input) {
+            showWarningsForAttributes(input, ['type', 'label', 'placeholder', 'value']);
+            /** @type {SweetAlertInput} */
+            // @ts-ignore
+
+            result.input = input.getAttribute('type') || 'text';
+
+            if (input.hasAttribute('label')) {
+                result.inputLabel = input.getAttribute('label');
+            }
+
+            if (input.hasAttribute('placeholder')) {
+                result.inputPlaceholder = input.getAttribute('placeholder');
+            }
+
+            if (input.hasAttribute('value')) {
+                result.inputValue = input.getAttribute('value');
+            }
+        }
+        /** @type {HTMLElement[]} */
+
+
+        const inputOptions = Array.from(templateContent.querySelectorAll('swal-input-option'));
+
+        if (inputOptions.length) {
+            result.inputOptions = {};
+            inputOptions.forEach(option => {
+                showWarningsForAttributes(option, ['value']);
+                const optionValue = option.getAttribute('value');
+                const optionName = option.innerHTML;
+                result.inputOptions[optionValue] = optionName;
+            });
+        }
+
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     * @param {string[]} paramNames
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const getSwalStringParams = (templateContent, paramNames) => {
+        const result = {};
+
+        for (const i in paramNames) {
+            const paramName = paramNames[i];
+            /** @type {HTMLElement} */
+
+            const tag = templateContent.querySelector(paramName);
+
+            if (tag) {
+                showWarningsForAttributes(tag, []);
+                result[paramName.replace(/^swal-/, '')] = tag.innerHTML.trim();
+            }
+        }
+
+        return result;
+    };
+    /**
+     * @param {DocumentFragment} templateContent
+     */
+
+
+    const showWarningsForElements = templateContent => {
+        const allowedElements = swalStringParams.concat(['swal-param', 'swal-button', 'swal-image', 'swal-icon', 'swal-input', 'swal-input-option']);
+        Array.from(templateContent.children).forEach(el => {
+            const tagName = el.tagName.toLowerCase();
+
+            if (!allowedElements.includes(tagName)) {
+                warn("Unrecognized element <".concat(tagName, ">"));
+            }
+        });
+    };
+    /**
+     * @param {HTMLElement} el
+     * @param {string[]} allowedAttributes
+     */
+
+
+    const showWarningsForAttributes = (el, allowedAttributes) => {
+        Array.from(el.attributes).forEach(attribute => {
+            if (allowedAttributes.indexOf(attribute.name) === -1) {
+                warn(["Unrecognized attribute \"".concat(attribute.name, "\" on <").concat(el.tagName.toLowerCase(), ">."), "".concat(allowedAttributes.length ? "Allowed attributes are: ".concat(allowedAttributes.join(', ')) : 'To set the value, use HTML within the element.')]);
+            }
+        });
+    };
+
+    const SHOW_CLASS_TIMEOUT = 10;
+    /**
+     * Open popup, add necessary classes and styles, fix scrollbar
+     *
+     * @param {SweetAlertOptions} params
+     */
+
+    const openPopup = params => {
+        const container = getContainer();
+        const popup = getPopup();
+
+        if (typeof params.willOpen === 'function') {
+            params.willOpen(popup);
+        }
+
+        const bodyStyles = window.getComputedStyle(document.body);
+        const initialBodyOverflow = bodyStyles.overflowY;
+        addClasses$1(container, popup, params); // scrolling is 'hidden' until animation is done, after that 'auto'
+
+        setTimeout(() => {
+            setScrollingVisibility(container, popup);
+        }, SHOW_CLASS_TIMEOUT);
+
+        if (isModal()) {
+            fixScrollContainer(container, params.scrollbarPadding, initialBodyOverflow);
+            setAriaHidden();
+        }
+
+        if (!isToast() && !globalState.previousActiveElement) {
+            globalState.previousActiveElement = document.activeElement;
+        }
+
+        if (typeof params.didOpen === 'function') {
+            setTimeout(() => params.didOpen(popup));
+        }
+
+        removeClass(container, swalClasses['no-transition']);
+    };
+    /**
+     * @param {AnimationEvent} event
+     */
+
+    const swalOpenAnimationFinished = event => {
+        const popup = getPopup();
+
+        if (event.target !== popup) {
+            return;
+        }
+
+        const container = getContainer();
+        popup.removeEventListener(animationEndEvent, swalOpenAnimationFinished);
+        container.style.overflowY = 'auto';
+    };
+    /**
+     * @param {HTMLElement} container
+     * @param {HTMLElement} popup
+     */
+
+
+    const setScrollingVisibility = (container, popup) => {
+        if (animationEndEvent && hasCssAnimation(popup)) {
+            container.style.overflowY = 'hidden';
+            popup.addEventListener(animationEndEvent, swalOpenAnimationFinished);
+        } else {
+            container.style.overflowY = 'auto';
+        }
+    };
+    /**
+     * @param {HTMLElement} container
+     * @param {boolean} scrollbarPadding
+     * @param {string} initialBodyOverflow
+     */
+
+
+    const fixScrollContainer = (container, scrollbarPadding, initialBodyOverflow) => {
+        iOSfix();
+
+        if (scrollbarPadding && initialBodyOverflow !== 'hidden') {
+            fixScrollbar();
+        } // sweetalert2/issues/1247
+
+
+        setTimeout(() => {
+            container.scrollTop = 0;
+        });
+    };
+    /**
+     * @param {HTMLElement} container
+     * @param {HTMLElement} popup
+     * @param {SweetAlertOptions} params
+     */
+
+
+    const addClasses$1 = (container, popup, params) => {
+        addClass(container, params.showClass.backdrop); // this workaround with opacity is needed for https://github.com/sweetalert2/sweetalert2/issues/2059
+
+        popup.style.setProperty('opacity', '0', 'important');
+        show(popup, 'grid');
+        setTimeout(() => {
+            // Animate popup right after showing it
+            addClass(popup, params.showClass.popup); // and remove the opacity workaround
+
+            popup.style.removeProperty('opacity');
+        }, SHOW_CLASS_TIMEOUT); // 10ms in order to fix #2062
+
+        addClass([document.documentElement, document.body], swalClasses.shown);
+
+        if (params.heightAuto && params.backdrop && !params.toast) {
+            addClass([document.documentElement, document.body], swalClasses['height-auto']);
+        }
+    };
+
+    var defaultInputValidators = {
+        /**
+         * @param {string} string
+         * @param {string} validationMessage
+         * @returns {Promise<void | string>}
+         */
+        email: (string, validationMessage) => {
+            return /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9-]{2,24}$/.test(string) ? Promise.resolve() : Promise.resolve(validationMessage || 'Invalid email address');
+        },
+
+        /**
+         * @param {string} string
+         * @param {string} validationMessage
+         * @returns {Promise<void | string>}
+         */
+        url: (string, validationMessage) => {
+            // taken from https://stackoverflow.com/a/3809435 with a small change from #1306 and #2013
+            return /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-z]{2,63}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)$/.test(string) ? Promise.resolve() : Promise.resolve(validationMessage || 'Invalid URL');
+        }
+    };
+
+    /**
+     * @param {SweetAlertOptions} params
+     */
+
+    function setDefaultInputValidators(params) {
+        // Use default `inputValidator` for supported input types if not provided
+        if (!params.inputValidator) {
+            Object.keys(defaultInputValidators).forEach(key => {
+                if (params.input === key) {
+                    params.inputValidator = defaultInputValidators[key];
+                }
+            });
+        }
+    }
+    /**
+     * @param {SweetAlertOptions} params
+     */
+
+
+    function validateCustomTargetElement(params) {
+        // Determine if the custom target element is valid
+        if (!params.target || typeof params.target === 'string' && !document.querySelector(params.target) || typeof params.target !== 'string' && !params.target.appendChild) {
+            warn('Target parameter is not valid, defaulting to "body"');
+            params.target = 'body';
+        }
+    }
+    /**
+     * Set type, text and actions on popup
+     *
+     * @param {SweetAlertOptions} params
+     */
+
+
+    function setParameters(params) {
+        setDefaultInputValidators(params); // showLoaderOnConfirm && preConfirm
+
+        if (params.showLoaderOnConfirm && !params.preConfirm) {
+            warn('showLoaderOnConfirm is set to true, but preConfirm is not defined.\n' + 'showLoaderOnConfirm should be used together with preConfirm, see usage example:\n' + 'https://sweetalert2.github.io/#ajax-request');
+        }
+
+        validateCustomTargetElement(params); // Replace newlines with <br> in title
+
+        if (typeof params.title === 'string') {
+            params.title = params.title.split('\n').join('<br />');
+        }
+
+        init(params);
+    }
+
+    let currentInstance;
+
+    class SweetAlert {
+        constructor() {
+            // Prevent run in Node env
+            if (typeof window === 'undefined') {
+                return;
+            }
+
+            currentInstance = this; // @ts-ignore
+
+            for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+            }
+
+            const outerParams = Object.freeze(this.constructor.argsToParams(args));
+            Object.defineProperties(this, {
+                params: {
+                    value: outerParams,
+                    writable: false,
+                    enumerable: true,
+                    configurable: true
+                }
+            }); // @ts-ignore
+
+            const promise = currentInstance._main(currentInstance.params);
+
+            privateProps.promise.set(this, promise);
+        }
+
+        _main(userParams) {
+            let mixinParams = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+            showWarningsForParams(Object.assign({}, mixinParams, userParams));
+
+            if (globalState.currentInstance) {
+                // @ts-ignore
+                globalState.currentInstance._destroy();
+
+                if (isModal()) {
+                    unsetAriaHidden();
+                }
+            }
+
+            globalState.currentInstance = currentInstance;
+            const innerParams = prepareParams(userParams, mixinParams);
+            setParameters(innerParams);
+            Object.freeze(innerParams); // clear the previous timer
+
+            if (globalState.timeout) {
+                globalState.timeout.stop();
+                delete globalState.timeout;
+            } // clear the restore focus timeout
+
+
+            clearTimeout(globalState.restoreFocusTimeout);
+            const domCache = populateDomCache(currentInstance);
+            render(currentInstance, innerParams);
+            privateProps.innerParams.set(currentInstance, innerParams);
+            return swalPromise(currentInstance, domCache, innerParams);
+        } // `catch` cannot be the name of a module export, so we define our thenable methods here instead
+
+
+        then(onFulfilled) {
+            const promise = privateProps.promise.get(this);
+            return promise.then(onFulfilled);
+        }
+
+        finally(onFinally) {
+            const promise = privateProps.promise.get(this);
+            return promise.finally(onFinally);
+        }
+
+    }
+    /**
+     * @param {SweetAlert2} instance
+     * @param {DomCache} domCache
+     * @param {SweetAlertOptions} innerParams
+     * @returns {Promise}
+     */
+
+
+    const swalPromise = (instance, domCache, innerParams) => {
+        return new Promise((resolve, reject) => {
+            // functions to handle all closings/dismissals
+
+            /**
+             * @param {DismissReason} dismiss
+             */
+            const dismissWith = dismiss => {
+                // @ts-ignore
+                instance.close({
+                    isDismissed: true,
+                    dismiss
+                });
+            };
+
+            privateMethods.swalPromiseResolve.set(instance, resolve);
+            privateMethods.swalPromiseReject.set(instance, reject);
+
+            domCache.confirmButton.onclick = () => {
+                handleConfirmButtonClick(instance);
+            };
+
+            domCache.denyButton.onclick = () => {
+                handleDenyButtonClick(instance);
+            };
+
+            domCache.cancelButton.onclick = () => {
+                handleCancelButtonClick(instance, dismissWith);
+            };
+
+            domCache.closeButton.onclick = () => {
+                // @ts-ignore
+                dismissWith(DismissReason.close);
+            };
+
+            handlePopupClick(instance, domCache, dismissWith);
+            addKeydownHandler(instance, globalState, innerParams, dismissWith);
+            handleInputOptionsAndValue(instance, innerParams);
+            openPopup(innerParams);
+            setupTimer(globalState, innerParams, dismissWith);
+            initFocus(domCache, innerParams); // Scroll container to top on open (#1247, #1946)
+
+            setTimeout(() => {
+                domCache.container.scrollTop = 0;
+            });
+        });
+    };
+    /**
+     * @param {SweetAlertOptions} userParams
+     * @param {SweetAlertOptions} mixinParams
+     * @returns {SweetAlertOptions}
+     */
+
+
+    const prepareParams = (userParams, mixinParams) => {
+        const templateParams = getTemplateParams(userParams);
+        const params = Object.assign({}, defaultParams, mixinParams, templateParams, userParams); // precedence is described in #2131
+
+        params.showClass = Object.assign({}, defaultParams.showClass, params.showClass);
+        params.hideClass = Object.assign({}, defaultParams.hideClass, params.hideClass);
+        return params;
+    };
+    /**
+     * @param {SweetAlert2} instance
+     * @returns {DomCache}
+     */
+
+
+    const populateDomCache = instance => {
+        const domCache = {
+            popup: getPopup(),
+            container: getContainer(),
+            actions: getActions(),
+            confirmButton: getConfirmButton(),
+            denyButton: getDenyButton(),
+            cancelButton: getCancelButton(),
+            loader: getLoader(),
+            closeButton: getCloseButton(),
+            validationMessage: getValidationMessage(),
+            progressSteps: getProgressSteps()
+        };
+        privateProps.domCache.set(instance, domCache);
+        return domCache;
+    };
+    /**
+     * @param {GlobalState} globalState
+     * @param {SweetAlertOptions} innerParams
+     * @param {Function} dismissWith
+     */
+
+
+    const setupTimer = (globalState$$1, innerParams, dismissWith) => {
+        const timerProgressBar = getTimerProgressBar();
+        hide(timerProgressBar);
+
+        if (innerParams.timer) {
+            globalState$$1.timeout = new Timer(() => {
+                dismissWith('timer');
+                delete globalState$$1.timeout;
+            }, innerParams.timer);
+
+            if (innerParams.timerProgressBar) {
+                show(timerProgressBar);
+                applyCustomClass(timerProgressBar, innerParams, 'timerProgressBar');
+                setTimeout(() => {
+                    if (globalState$$1.timeout && globalState$$1.timeout.running) {
+                        // timer can be already stopped or unset at this point
+                        animateTimerProgressBar(innerParams.timer);
+                    }
+                });
+            }
+        }
+    };
+    /**
+     * @param {DomCache} domCache
+     * @param {SweetAlertOptions} innerParams
+     */
+
+
+    const initFocus = (domCache, innerParams) => {
+        if (innerParams.toast) {
+            return;
+        }
+
+        if (!callIfFunction(innerParams.allowEnterKey)) {
+            blurActiveElement();
+            return;
+        }
+
+        if (!focusButton(domCache, innerParams)) {
+            setFocus(innerParams, -1, 1);
+        }
+    };
+    /**
+     * @param {DomCache} domCache
+     * @param {SweetAlertOptions} innerParams
+     * @returns {boolean}
+     */
+
+
+    const focusButton = (domCache, innerParams) => {
+        if (innerParams.focusDeny && isVisible(domCache.denyButton)) {
+            domCache.denyButton.focus();
+            return true;
+        }
+
+        if (innerParams.focusCancel && isVisible(domCache.cancelButton)) {
+            domCache.cancelButton.focus();
+            return true;
+        }
+
+        if (innerParams.focusConfirm && isVisible(domCache.confirmButton)) {
+            domCache.confirmButton.focus();
+            return true;
+        }
+
+        return false;
+    };
+
+    const blurActiveElement = () => {
+        if (document.activeElement instanceof HTMLElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
+    }; // This anti-war message will only be shown to Russian users visiting Russian sites
+
+
+    if (typeof window !== 'undefined' && /^ru\b/.test(navigator.language) && location.host.match(/\.(ru|su|xn--p1ai)$/)) {
+        if (Math.random() < 0.1) {
+            const noWar = document.createElement('div');
+            noWar.className = 'leave-russia-now-and-apply-your-skills-to-the-world';
+            const video = getRandomElement([{
+                text: "\u0412 \u043D\u0438\u0436\u0435\u043F\u0440\u0438\u0432\u0435\u0434\u0451\u043D\u043D\u043E\u043C \u0432\u0438\u0434\u0435\u043E \u043E\u0431\u044A\u044F\u0441\u043D\u044F\u0435\u0442\u0441\u044F \u043A\u0430\u043A \u043A\u0430\u0436\u0434\u044B\u0439 \u0438\u0437 \u043D\u0430\u0441 \u043C\u043E\u0436\u0435\u0442 \u043F\u043E\u043C\u043E\u0447\u044C \u0432 \u0442\u043E\u043C,\n        <strong>\u0447\u0442\u043E\u0431\u044B \u044D\u0442\u0430 \u0431\u0435\u0441\u0441\u043C\u044B\u0441\u043B\u0435\u043D\u043D\u0430\u044F \u0438 \u0431\u0435\u0441\u0447\u0435\u043B\u043E\u0432\u0435\u0447\u043D\u0430\u044F \u0432\u043E\u0439\u043D\u0430 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u043B\u0430\u0441\u044C</strong>:",
+                id: '4CfDhaRkw7I'
+            }, {
+                text: 'Эмпатия - главное <strong>человеческое</strong> чувство. Способность сопереживать. <strong>Способность поставить себя на место другого.</strong>',
+                id: 's-GLAIY4DXA'
+            }]);
+            setInnerHtml(noWar, "\n      <div>\n        \u0415\u0441\u043B\u0438 \u043C\u044B \u043D\u0435 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u043C \u0432\u043E\u0439\u043D\u0443, \u043E\u043D\u0430 \u043F\u0440\u0438\u0434\u0435\u0442 \u0432 \u0434\u043E\u043C <strong>\u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0438\u0437 \u043D\u0430\u0441</strong> \u0438 \u0435\u0451 \u043F\u043E\u0441\u043B\u0435\u0434\u0441\u0442\u0432\u0438\u044F \u0431\u0443\u0434\u0443\u0442 <strong>\u0443\u0436\u0430\u0441\u0430\u044E\u0449\u0438\u043C\u0438</strong>.\n      </div>\n      <div>\n        \u041F\u0443\u0442\u0438\u043D\u0441\u043A\u0438\u0439 \u0440\u0435\u0436\u0438\u043C \u0437\u0430 20 \u0441 \u043B\u0438\u0448\u043D\u0438\u043C \u043B\u0435\u0442 \u0441\u0432\u043E\u0435\u0433\u043E \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0434\u043E\u043B\u0431\u0438\u043B \u043D\u0430\u043C, \u0447\u0442\u043E \u043C\u044B \u0431\u0435\u0441\u0441\u0438\u043B\u044C\u043D\u044B \u0438 \u043E\u0434\u0438\u043D \u0447\u0435\u043B\u043E\u0432\u0435\u043A \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u043D\u0438\u0447\u0435\u0433\u043E \u0441\u0434\u0435\u043B\u0430\u0442\u044C. <strong>\u042D\u0442\u043E \u043D\u0435 \u0442\u0430\u043A!</strong>\n      </div>\n      <div>\n        ".concat(video.text, "\n      </div>\n      <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/").concat(video.id, "\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>\n      <div>\n        \u041D\u0435\u0442 \u0432\u043E\u0439\u043D\u0435!\n      </div>\n      "));
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '&times;';
+
+            closeButton.onclick = () => noWar.remove();
+
+            noWar.appendChild(closeButton);
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    document.body.appendChild(noWar);
+                }, 1000);
+            });
+        }
+    } // Assign instance methods from src/instanceMethods/*.js to prototype
+
+
+    Object.assign(SweetAlert.prototype, instanceMethods); // Assign static methods from src/staticMethods/*.js to constructor
+
+    Object.assign(SweetAlert, staticMethods); // Proxy to instance methods to constructor, for now, for backwards compatibility
+
+    Object.keys(instanceMethods).forEach(key => {
+        /**
+         * @param {...any} args
+         * @returns {any}
+         */
+        SweetAlert[key] = function () {
+            if (currentInstance) {
+                return currentInstance[key](...arguments);
+            }
+        };
+    });
+    SweetAlert.DismissReason = DismissReason;
+    SweetAlert.version = '11.4.33';
+
+    const Swal = SweetAlert; // @ts-ignore
+
+    Swal.default = Swal;
+
+    return Swal;
+
+}));
+if (typeof this !== 'undefined' && this.Sweetalert2) { this.swal = this.sweetAlert = this.Swal = this.SweetAlert = this.Sweetalert2 }

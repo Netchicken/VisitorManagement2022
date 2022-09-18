@@ -6,15 +6,16 @@
     <title>@ViewData["Title"] - The Awesome Visitor Management System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sweetalert.css" />
+
     <link rel="stylesheet" href="~/VisitorManagement.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.min.css" />  @*https://www.jsdelivr.com/package/npm/sweetalert2?path=dist&tab=collection*@
+    @*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.min.css" />*@
 
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.all.min.js"></script> @*https://www.jsdelivr.com/package/npm/sweetalert2?path=dist&tab=collection add this script*@
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.all.min.js"></script>
 
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.9/sweetalert2.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/6.6.9/sweetalert2.min.js"></script>
+
 
 </head>
 <body>
@@ -49,7 +50,7 @@
     <div class="container">
         <main role="main" class="pb-3">
 
-            @Html.Partial("_NotificationPanel")
+            @Html.Partial("_SweetAlert")
 
             @RenderBody()
         </main>
