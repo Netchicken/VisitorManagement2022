@@ -5,7 +5,6 @@ using System.Diagnostics;
 
 using VisitorManagement.Data;
 using VisitorManagement.Models;
-using VisitorManagement.Operations;
 using VisitorManagement.Services;
 
 using static VisitorManagement.Enum.SweetAlertEnum;
@@ -37,9 +36,9 @@ namespace VisitorManagement.Controllers
             //run the dataseeder
             //  _dataSeeder.SeedStaffAsync();
             //  _dataSeeder.SeedVisitorsAsync();
-            TempData["notification"] = _sweetalert.AlertPopupWithImage("This is the Index Page", "This is a cool message", NotificationType.success);
+            TempData["notification"] = _sweetalert.AlertPopupWithImage("The Visitor Management System", "Automate and record visitors to your organization", NotificationType.success);
 
-            ViewBag.Welcome = "Welcome to the VMS";
+            ViewBag.Welcome = "Welcome to the Visitor Management System";
 
 
             ViewData["Conditions"] = _textFileOperations.LoadConditionsForAcceptanceText();
@@ -142,6 +141,14 @@ namespace VisitorManagement.Controllers
 
         public IActionResult Privacy()
         {
+
+            ViewData["WhereQuery"] = _dbCalls.WhereQueryLambda();
+
+
+
+
+
+
             return View();
         }
 

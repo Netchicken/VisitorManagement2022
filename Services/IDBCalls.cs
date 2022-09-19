@@ -9,5 +9,9 @@ namespace VisitorManagement.Services
         IEnumerable<Visitor> UniqueVisitorNames();
         IEnumerable<Visitor> VisitorsLoggedIn();
         IEnumerable<Visitor> VisitorsInTheLast7days();
+        IEnumerable<Visitor> WhereQueryLambda();
+        IEnumerable<StaffNames> OrderByLambda();
+        IEnumerable<StaffNames> SelectMethodQuery();
+        IEnumerable<Visitor> GroupByQuery();
     }
 }

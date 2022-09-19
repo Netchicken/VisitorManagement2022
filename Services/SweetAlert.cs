@@ -1,6 +1,6 @@
 ﻿using static VisitorManagement.Enum.SweetAlertEnum;
 
-namespace VisitorManagement.Operations
+namespace VisitorManagement.Services
 {
     public class SweetAlert : ISweetAlert
     {

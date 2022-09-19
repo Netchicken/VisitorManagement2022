@@ -6,6 +6,20 @@ namespace VisitorManagement.Services
     public class DBCalls : IDBCalls
     {
 
+
+        //          from[identifier] in [data source]
+        //          let[expression]
+        //          where[boolean expression]
+        //          order by[[expression] (ascending/descending)], [optionally repeat]
+        //          select[expression]
+        //          group[expression] by[expression] into[expression]
+
+
+
+
+
+
+
         private readonly ApplicationDbContext _context;
 
         public DBCalls(ApplicationDbContext context)
@@ -49,15 +63,70 @@ namespace VisitorManagement.Services
         {
             return _context.Visitor.OrderByDescending(v => v.DateIn).Where(v => v.DateOut == null).ToList();
         }
-
+        /// <summary>
+        /// Get all customers in teh last 7 days
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<Visitor> VisitorsInTheLast7days()
         {
             return _context.Visitor
-                                 .Where(v => v.DateIn > DateTime.Today.AddDays(-7))
+                                 .Where(v => v.DateIn > DateTime.Today.AddDays(-2))
                                  .OrderBy(v => v.DateIn)
-                                 .Select(s => new Visitor { FirstName = s.FirstName, LastName = s.LastName, StaffName = s.StaffName, DateIn= s.DateIn })
+                                 .Select(s => new Visitor { FirstName = s.FirstName, LastName = s.LastName, StaffName = s.StaffName, DateIn = s.DateIn })
                               .ToList();
         }
+
+
+
+        //https://www.tutorialsteacher.com/linq
+
+
+
+        public void WhereQuery()
+        {
+            var query = from c in _context.Visitor
+                        where c.FirstName == "John"
+                        select c;
+
+        }
+
+
+        public IEnumerable<Visitor> WhereQueryLambda()
+        {
+            return _context.Visitor.Where(c => c.FirstName == "John");
+
+        }
+        //OrderBy and ThenBy sorts collections in ascending order by default.
+        //ThenByDescending method sorts the collection in decending order on another field.
+
+        public IEnumerable<StaffNames> OrderByLambda()
+        {
+            return _context.StaffNames.OrderBy(c => c.VisitorCount);
+            // var queryThenBy = _context.StaffNames.OrderBy(c => c.VisitorCount).ThenBy(s => s.Name);
+
+        }
+
+
+        public IEnumerable<StaffNames> SelectMethodQuery()
+        {
+            //select a single field
+            // var query = _context.StaffNames.Select(s => s.Name);
+
+
+            //select a multiple field this is called a projection query
+            return _context.StaffNames.Select(s => new StaffNames { Name = s.Name, Department = s.Department });
+
+        }
+
+
+
+        public IEnumerable<Visitor> GroupByQuery()
+        {
+
+            return (IEnumerable<Visitor>)_context.Visitor.GroupBy(v => v.DateIn.Value.Day);
+
+        }
+
 
 
     }

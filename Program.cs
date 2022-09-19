@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 using VisitorManagement.Data;
-using VisitorManagement.Operations;
 using VisitorManagement.Services;
 
 var builder = WebApplication.CreateBuilder(args);

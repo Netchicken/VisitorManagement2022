@@ -3,8 +3,19 @@
 }
 @model VisitorManagement.Models.Visitor
 <div>
-    <img src="~/images/logo.png" height="113" width="113" border="0" />
-    <h1 class="display-4">@ViewBag.Welcome </h1>
+    <div class="row">
+        <div class="col-1">
+            <img src="~/images/logo.png" height="113" width="113" border="0" />
+           
+
+        </div>
+        <div class="col-11">
+            <h1 class="display-4">@ViewBag.Welcome </h1>
+        </div>
+
+    </div>
+    <hr>
+
 
     <div class="row">
         <div class="col-6">
@@ -33,7 +44,7 @@
         <div class="col-3">
 
 
-            <h4>Visitors in the last 7 days</h4>
+            <h4>Visitors in the last 2 days</h4>
             <ul>
                 @foreach (var item in (IEnumerable<Visitor>)ViewData["Last7DaysVisitors"])
                 {
@@ -56,17 +67,17 @@
 
 </div>
 
-@section Scripts
+        @section Scripts
 {
 
 
-    @if (TempData["notification"] != null)
-    {
-        @Html.Raw(TempData["notification"])
-    }
+            @if (TempData["notification"] != null)
+            {
+                @Html.Raw(TempData["notification"])
+            }
 
-    @if (TempData["create"] != null)
-    {
-        @Html.Raw(TempData["create"])
-    }
-}
+            @if (TempData["create"] != null)
+            {
+                @Html.Raw(TempData["create"])
+            }
+        }
