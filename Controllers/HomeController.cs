@@ -33,10 +33,12 @@ namespace VisitorManagement.Controllers
 
         public IActionResult Index()
         {
+
+            TempData["notification"] = _sweetalert.AlertPopupWithImage("The Visitor Management System", "Automate and record visitors to your organization", NotificationType.success);
+
             //run the dataseeder
             //  _dataSeeder.SeedStaffAsync();
             //  _dataSeeder.SeedVisitorsAsync();
-            TempData["notification"] = _sweetalert.AlertPopupWithImage("The Visitor Management System", "Automate and record visitors to your organization", NotificationType.success);
 
             ViewBag.Welcome = "Welcome to the Visitor Management System";
 
@@ -132,6 +134,8 @@ namespace VisitorManagement.Controllers
             _context.Update(visitor);
             //save the data to the database
             await _context.SaveChangesAsync();
+
+            TempData["logout"] = _sweetalert.AlertPopup("Thank you for your visit", visitor.FirstName + " " + visitor.LastName, NotificationType.success);
 
             //go to the Index method on the Home Controller
             return RedirectToAction("Index", "Home");

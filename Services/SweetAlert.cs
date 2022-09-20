@@ -15,7 +15,7 @@ namespace VisitorManagement.Services
                 "text: '" + message + "', " +
                 "icon: '" + notificationType.ToString() + "', " +
                 "buttons: false, " +
-                "timer: '5000'})</script>";
+                "timer: '10000'})</script>";
 
 
         }

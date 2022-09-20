@@ -10,7 +10,5 @@
             info,
             question
         }
-
-
     }
 }
