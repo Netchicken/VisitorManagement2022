@@ -6,12 +6,15 @@
     <title>@ViewData["Title"] - The Awesome Visitor Management System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/sweetalert.css" />
+
 
     <link rel="stylesheet" href="~/VisitorManagement.styles.css" asp-append-version="true" />
+
+    @*I added the css as a local file so I could edit it.*@ 
+    <link rel="stylesheet" href="~/css/sweetalert.css" />
+
+    @*Here are the 2 files downloaded from the CDN*@
     @*<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.min.css" />*@
-
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.33/dist/sweetalert2.all.min.js"></script>
 
 
@@ -39,7 +42,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Visitors" asp-action="Index">Visitors</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Admin">Admin Database</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />

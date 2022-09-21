@@ -8,5 +8,7 @@ namespace VisitorManagement.Services
         string AlertCancel(string title, string message, string buttonText, NotificationType notificationType);
         string AlertOptions(string title, string message, NotificationType notificationType);
         string AlertPopupWithImage(string title, string message, NotificationType notificationType);
+
+
     }
 }

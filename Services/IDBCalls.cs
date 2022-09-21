@@ -1,4 +1,5 @@
 ﻿using VisitorManagement.Models;
+using VisitorManagement.ViewModels;
 
 namespace VisitorManagement.Services
 {
@@ -12,6 +13,7 @@ namespace VisitorManagement.Services
         IEnumerable<Visitor> WhereQueryLambda();
         IEnumerable<StaffNames> OrderByLambda();
         IEnumerable<StaffNames> SelectMethodQuery();
-        IEnumerable<Visitor> GroupByQuery();
+        IEnumerable<GroupBy> GroupByQuery();
+        IEnumerable<GroupByStaff> GroupByStaffQuery();
     }
 }

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using VisitorManagement.Data;
 using VisitorManagement.Models;
 using VisitorManagement.Services;
+using VisitorManagement.ViewModels;
 
 using static VisitorManagement.Enum.SweetAlertEnum;
 
@@ -54,14 +55,14 @@ namespace VisitorManagement.Controllers
             ViewData["StaffNameId"] = staffList;
 
             //create an instance of the visitor
-            Visitor visitor = new Visitor();
+            VisitorVM visitor = new VisitorVM();
             //pass in the currentdate and time to the Datein property
             visitor.DateIn = DateTime.Now;
 
             //send that visitor to the Create View
             return View(visitor);
 
-            //return View();
+
         }
 
         //copied over from the VisitorsController
@@ -106,13 +107,7 @@ namespace VisitorManagement.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
 
-        //with a link
-        //https://localhost:7088/Home/Logout/75988a8d-f37c-42ca-9a1f-3dfdbf26e6dc
-        //with a button
-
-        //formaction="/Home/Logout?id=7a0e09b4-e944-4846-bcc3-b8afc94076c7"
-
-
+        //Add in the Route attribute to pass through the ID of the visitor
         [Route("/Home/Logout", Name = "LogoutRoute")]
         public async Task<IActionResult> Logout(Guid? id)
         {
@@ -127,6 +122,7 @@ namespace VisitorManagement.Controllers
                 return NotFound();
             }
 
+            //Add in NOW to the dateout
             visitor.DateOut = DateTime.Now;
 
 
@@ -135,6 +131,8 @@ namespace VisitorManagement.Controllers
             //save the data to the database
             await _context.SaveChangesAsync();
 
+
+            //Add in a sweet alert to confirm the logout also update the sweetalert partial page with the new alert name
             TempData["logout"] = _sweetalert.AlertPopup("Thank you for your visit", visitor.FirstName + " " + visitor.LastName, NotificationType.success);
 
             //go to the Index method on the Home Controller
@@ -146,7 +144,7 @@ namespace VisitorManagement.Controllers
         public IActionResult Privacy()
         {
 
-            ViewData["WhereQuery"] = _dbCalls.WhereQueryLambda();
+
 
 
 
@@ -155,6 +153,27 @@ namespace VisitorManagement.Controllers
 
             return View();
         }
+
+
+        public IActionResult Admin()
+        {
+
+            ViewData["WhereQuery"] = _dbCalls.WhereQueryLambda();
+            ViewData["OrderByQuery"] = _dbCalls.OrderByLambda();
+            ViewData["SelectQuery"] = _dbCalls.SelectMethodQuery();
+            ViewData["GroupByQuery"] = _dbCalls.GroupByQuery();
+            ViewData["GroupByStaffQuery"] = _dbCalls.GroupByStaffQuery();
+
+
+
+
+
+            return View();
+        }
+
+
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -1,5 +1,6 @@
 ﻿using VisitorManagement.Data;
 using VisitorManagement.Models;
+using VisitorManagement.ViewModels;
 
 namespace VisitorManagement.Services
 {
@@ -63,6 +64,8 @@ namespace VisitorManagement.Services
         {
             return _context.Visitor.OrderByDescending(v => v.DateIn).Where(v => v.DateOut == null).ToList();
         }
+
+
         /// <summary>
         /// Get all customers in teh last 7 days
         /// </summary>
@@ -82,18 +85,18 @@ namespace VisitorManagement.Services
 
 
 
-        public void WhereQuery()
+        public IEnumerable<Visitor> WhereQuery()
         {
             var query = from c in _context.Visitor
                         where c.FirstName == "John"
                         select c;
-
+            return query;
         }
 
 
         public IEnumerable<Visitor> WhereQueryLambda()
         {
-            return _context.Visitor.Where(c => c.FirstName == "John");
+            return _context.Visitor.Where(c => c.FirstName.Contains( "la"));
 
         }
         //OrderBy and ThenBy sorts collections in ascending order by default.
@@ -120,15 +123,22 @@ namespace VisitorManagement.Services
 
 
 
-        public IEnumerable<Visitor> GroupByQuery()
+        public IEnumerable<GroupBy> GroupByQuery()
         {
 
-            return (IEnumerable<Visitor>)_context.Visitor.GroupBy(v => v.DateIn.Value.Day);
+            return _context.Visitor.GroupBy(v => v.DateIn.Value.Day).Select(g => new GroupBy { Day = g.Key, Count = g.Count() });
+
+        }
+
+        public IEnumerable<GroupByStaff> GroupByStaffQuery()
+        {
+
+            return _context.Visitor.GroupBy(v => v.StaffName.Name).Select(g => new GroupByStaff { Staff = g.Key, Count = g.Count() });
 
         }
 
 
-
+        
     }
 
 
