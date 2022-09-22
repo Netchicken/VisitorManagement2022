@@ -52,18 +52,18 @@
                 }
             </ul>
 
-
+            <h4>Weather API</h4>
+            <p> @ViewData["Temp"]</p>
+            <p> @ViewData["Wind"]</p>
         </div>
 
     </div>
 
     <div class="row">
 
-        @*@await Html.PartialAsync("_Conditions")*@
+        @await Html.PartialAsync("_Conditions")
 
-        <h3>Weather API</h3>
-        <p> @ViewData["Temp"]</p>
-
+       
     </div>
   
 

@@ -35,24 +35,9 @@ namespace VisitorManagement.Services
             // HttpClient is intended to be instantiated once per application, rather than per-use. See Remarks.
             HttpClient client = new HttpClient();
             string responseBody = null;
-            string city = "Christchurch";
             string apiKey = "8827252724a06575e5be376a09a53736";
-            string URL = "https://api.openweathermap.org/data/2.5/weather?q=Christchurch&units=metric&appid=8827252724a06575e5be376a09a53736";
+            string URL = "https://api.openweathermap.org/data/2.5/weather?q=Christchurch&units=metric&appid=" + apiKey;
 
-
-            //"https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=" + apiKey;
-
-
-
-
-
-            //  string uri = "https://api.openweathermap.org/data/3.0/onecall?lat=33.44&lon=-94.04&exclude=hourly,daily&appid={apiKey}";
-            // HttpResponseMessage response = await client.GetAsync(URL);
-
-            // response.EnsureSuccessStatusCode();
-
-            //  responseBody = await response.Content.ReadAsStringAsync();
-            // Above three lines can be replaced with new helper method below  
 
             /*http://json2csharp.com*/
 
@@ -62,17 +47,13 @@ namespace VisitorManagement.Services
             Root root = JsonConvert.DeserializeObject<Root>(responseBody);
 
             Debug.WriteLine(root.main.feels_like);
-            //}
-
-            //catch (HttpRequestException e)
-            //{
-            //    Debug.WriteLine("\nException Caught!");
-            //    Debug.WriteLine("Message :{0} ", e.Message);
-            //}
+            
 
             return root;
         }
 
+
+        //not used
         public Weather WeatherApiResult()
         {
             Weather weather = null;
@@ -82,10 +63,10 @@ namespace VisitorManagement.Services
                 string apiKey = "8827252724a06575e5be376a09a53736";
                 string URL = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=" + apiKey;
 
-                var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("apiKey", $"{apiKey}");
+                var client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("apiKey", $"{apiKey}");
 
-                var httpResponse = await httpClient.GetAsync($"{URL}");
+                var httpResponse = await client.GetAsync($"{URL}");
                 var response = await httpResponse.Content.ReadAsStringAsync();
                 weather = JsonConvert.DeserializeObject<Weather>(response);
 

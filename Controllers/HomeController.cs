@@ -40,6 +40,7 @@ namespace VisitorManagement.Controllers
             Root root = await _aPI.WeatherAPI();
 
   ViewData["Temp"] ="The temperature is " + root.main.temp + "C but it feels like " + root.main.feels_like + "C";
+            ViewData["Wind"] = "The wind is " + root.wind.speed +" at "+ root.wind.deg  + " degrees, and the humidity is  " + root.main.humidity +" kpa" ;
 
 
             List<SweetAlert> alerts = new List<SweetAlert>();
