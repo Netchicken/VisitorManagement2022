@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-1">
             <img src="~/images/logo.png" height="113" width="113" border="0" />
-           
+
 
         </div>
         <div class="col-11">
@@ -59,11 +59,13 @@
 
     <div class="row">
 
-        @await Html.PartialAsync("_Conditions")
+        @*@await Html.PartialAsync("_Conditions")*@
+
+        <h3>Weather API</h3>
+        <p> @ViewData["Temp"]</p>
 
     </div>
-
-
+  
 
 </div>
 

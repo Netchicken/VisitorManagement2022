@@ -31,6 +31,8 @@ builder.Services.AddTransient<IDataSeeder, DataSeeder>();
 //methods to generate a sweetalert
 builder.Services.AddTransient<ISweetAlert, SweetAlert>();
 
+builder.Services.AddTransient<IAPI, API>();
+
 //Scoped lifetime services are created once per request. For example, in MVC it creates one instance for each HTTP request, but it uses the same instance in the other calls within the same web request.
 
 //not used yet

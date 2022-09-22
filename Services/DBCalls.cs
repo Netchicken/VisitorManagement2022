@@ -96,7 +96,7 @@ namespace VisitorManagement.Services
 
         public IEnumerable<Visitor> WhereQueryLambda()
         {
-            return _context.Visitor.Where(c => c.FirstName.Contains( "la"));
+            return _context.Visitor.Where(c => c.FirstName.Contains("la"));
 
         }
         //OrderBy and ThenBy sorts collections in ascending order by default.
@@ -135,10 +135,12 @@ namespace VisitorManagement.Services
 
             return _context.Visitor.GroupBy(v => v.StaffName.Name).Select(g => new GroupByStaff { Staff = g.Key, Count = g.Count() });
 
+
+
         }
 
 
-        
+
     }
 
 

@@ -5,6 +5,7 @@ using System.Diagnostics;
 
 using VisitorManagement.Data;
 using VisitorManagement.Models;
+using VisitorManagement.Operations;
 using VisitorManagement.Services;
 using VisitorManagement.ViewModels;
 
@@ -20,9 +21,10 @@ namespace VisitorManagement.Controllers
         private readonly IDataSeeder _dataSeeder;
         private readonly IDBCalls _dbCalls;
         private readonly ISweetAlert _sweetalert;
+        private readonly IAPI _aPI;
 
 
-        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder, IDBCalls dbCalls, ISweetAlert sweetalert)
+        public HomeController(ILogger<HomeController> logger, ITextFileOperations textFileOperations, ApplicationDbContext context, IDataSeeder dataSeeder, IDBCalls dbCalls, ISweetAlert sweetalert, IAPI aPI)
         {
             _logger = logger;
             _textFileOperations = textFileOperations;
@@ -30,10 +32,17 @@ namespace VisitorManagement.Controllers
             _dataSeeder = dataSeeder;
             _dbCalls = dbCalls;
             _sweetalert = sweetalert;
+            _aPI = aPI;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            Root root = await _aPI.WeatherAPI();
+
+  ViewData["Temp"] ="The temperature is " + root.main.temp + "C but it feels like " + root.main.feels_like + "C";
+
+
+            List<SweetAlert> alerts = new List<SweetAlert>();
 
             TempData["notification"] = _sweetalert.AlertPopupWithImage("The Visitor Management System", "Automate and record visitors to your organization", NotificationType.success);
 
@@ -95,6 +104,8 @@ namespace VisitorManagement.Controllers
                 //reload the page in the controller that is the index page.
                 return RedirectToAction(nameof(Index));
             }
+
+
             //reloads the select list
             ViewData["StaffNameId"] = new SelectList(_context.StaffNames, "Id", "Id", visitor.StaffNameId);
             return View(visitor);
@@ -164,6 +175,7 @@ namespace VisitorManagement.Controllers
             ViewData["GroupByQuery"] = _dbCalls.GroupByQuery();
             ViewData["GroupByStaffQuery"] = _dbCalls.GroupByStaffQuery();
 
+            Debug.WriteLine(_dbCalls.GroupByStaffQuery());
 
 
 
